@@ -1,0 +1,12 @@
+{
+  "site_version": "1.0.0",
+  "updated_at": "2026-07-31T20:00:00+08:00",
+  "content": {
+    "re2-unit-6-6a1": {"version": "1.0.0", "path": "/re2/unit-6/6a1/"},
+    "re2-unit-6-6a2": {"version": "1.0.0", "path": "/re2/unit-6/6a2/"},
+    "re2-unit-6-6b1": {"version": "1.0.0", "path": "/re2/unit-6/6b1/"},
+    "re2-unit-6-6b2": {"version": "1.0.0", "path": "/re2/unit-6/6b2/"},
+    "re2-unit-6-u5-u6-quiz": {"version": "1.0.0", "path": "/re2/unit-6/u5-u6-quiz/"},
+    "re2-unit-7-7a2": {"version": "1.0.0", "path": "/re2/unit-7/7a2/"}
+  }
+}

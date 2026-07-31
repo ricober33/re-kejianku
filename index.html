@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RE 互动课件库</title>
+<style>
+  :root{
+    --ink:#2b2350; --sub:#6b628f; --card:#ffffff; --line:#e6e0f5;
+    --peach:#ffe8d9; --mint:#dcf5e8; --sky:#ddefff; --lemon:#fff6cf; --lilac:#ece4ff; --rose:#ffe0ec;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Comic Sans MS","PingFang SC","Microsoft YaHei",system-ui,sans-serif;background:#fdf9f2;color:var(--ink);padding:28px 20px 60px}
+  .wrap{max-width:960px;margin:0 auto}
+  header{text-align:center;margin-bottom:26px}
+  h1{font-size:34px;letter-spacing:1px}
+  .tag{display:inline-block;margin-top:8px;background:var(--lilac);color:#5a4bb8;border-radius:999px;padding:6px 18px;font-size:14px}
+  .hint{margin-top:10px;color:var(--sub);font-size:14px}
+  .level{margin-top:26px;background:var(--card);border:2px solid var(--line);border-radius:18px;overflow:hidden}
+  .level>button.lv{width:100%;min-height:56px;border:0;background:transparent;display:flex;align-items:center;gap:12px;padding:14px 18px;font:inherit;font-size:20px;color:var(--ink);cursor:pointer;text-align:left}
+  .lv .dot{width:16px;height:16px;border-radius:50%;flex:none}
+  .lv .n{margin-left:auto;color:var(--sub);font-size:14px}
+  .units{display:none;padding:6px 18px 18px}
+  .level.open .units{display:block}
+  .unit{margin-top:10px}
+  .unit h3{font-size:16px;color:var(--sub);margin-bottom:8px}
+  .lessons{display:flex;flex-wrap:wrap;gap:10px}
+  a.lesson,span.lesson{display:flex;align-items:center;justify-content:center;min-width:120px;min-height:48px;padding:8px 16px;border-radius:14px;font-size:16px;text-decoration:none;border:2px solid transparent}
+  a.lesson{background:var(--mint);color:#0c6b4d;border-color:#9fd8bf;font-weight:bold}
+  a.lesson:hover{border-color:#0c6b4d}
+  span.lesson{background:#f2eee6;color:#a49a8c}
+  .empty{color:#a49a8c;font-size:14px;padding:4px 0}
+  footer{margin-top:40px;text-align:center;color:var(--sub);font-size:13px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>RE 互动课件库</h1>
+    <div class="tag">Reading Explorer · 上课总入口</div>
+    <div class="hint">选级别 → 选单元 → 点绿色课次开始上课（灰色 = 还没上线）</div>
+  </header>
+  <div id="app"></div>
+  <footer>老师提示：进入 ClassIn 教室 → 教学工具箱 → 浏览器 → 收藏夹打开本页。<br>上课前先选"鼠标工具"，再点课件按钮。网页打不开时用云盘里的 PDF/PPT 兜底。</footer>
+</div>
+<script>
+window.CATALOG = {
+  levels: [
+    {id:"f",   name:"Foundation", color:"#f7a45e", units:{}},
+    {id:"re1", name:"RE1",        color:"#5ec2f7", units:{}},
+    {id:"re2", name:"RE2",        color:"#63c98a", units:{
+      "6": [
+        {code:"6A1", title:"Cities Beneath the Sea · Words & Video", url:"./re2/unit-6/6a1/"},
+        {code:"6A2", title:"Cities Beneath the Sea · Cause & Effect", url:"./re2/unit-6/6a2/"},
+        {code:"6B1", title:"The Truth About Great Whites · Words", url:"./re2/unit-6/6b1/"},
+        {code:"6B2", title:"The Truth About Great Whites · Contrast", url:"./re2/unit-6/6b2/"},
+        {code:"U5–U6 Quiz", title:"Units 5–6 Review", url:"./re2/unit-6/u5-u6-quiz/"}
+      ],
+      "7": [
+        {code:"7A2", title:"The Flower Trade", url:"./re2/unit-7/7a2/"}
+      ]
+    }},
+    {id:"re3", name:"RE3", color:"#b18cf5", units:{}},
+    {id:"re4", name:"RE4", color:"#f58caa", units:{}},
+    {id:"re5", name:"RE5", color:"#e8c552", units:{}}
+  ]
+};
+(function(){
+  var app=document.getElementById('app');
+  window.CATALOG.levels.forEach(function(lv){
+    var unitKeys=Object.keys(lv.units);
+    var live=0; unitKeys.forEach(function(u){ live+=lv.units[u].filter(function(l){return l.url;}).length; });
+    var sec=document.createElement('section'); sec.className='level'+(live>0?' open':'');
+    var btn=document.createElement('button'); btn.className='lv';
+    btn.innerHTML='<span class="dot" style="background:'+lv.color+'"></span>'+lv.name+
+      '<span class="n">'+(live>0? live+' 节可上课':'即将上线')+'</span>';
+    btn.onclick=function(){ sec.classList.toggle('open'); };
+    sec.appendChild(btn);
+    var box=document.createElement('div'); box.className='units';
+    if(unitKeys.length===0){ box.innerHTML='<div class="empty">课件制作中，做好会自动出现在这里。</div>'; }
+    unitKeys.sort(function(a,b){return a-b;}).forEach(function(u){
+      var div=document.createElement('div'); div.className='unit';
+      div.innerHTML='<h3>Unit '+u+'</h3>';
+      var row=document.createElement('div'); row.className='lessons';
+      lv.units[u].forEach(function(l){
+        if(l.url){ var a=document.createElement('a'); a.className='lesson'; a.href=l.url; a.textContent=l.code+' · '+l.title; row.appendChild(a); }
+        else{ var s=document.createElement('span'); s.className='lesson'; s.textContent=l.code+' · 未上线'; row.appendChild(s); }
+      });
+      div.appendChild(row); box.appendChild(div);
+    });
+    sec.appendChild(box); app.appendChild(sec);
+  });
+})();
+</script>
+</body>
+</html>
