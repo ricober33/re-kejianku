@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RE2 Quiz · Units 7–8 · Value &amp; Journeys</title>
+<style>
+:root{
+  --ink:#22212b; --orange:#EA5B22; --orange-soft:#FFE3CE; --orange-deep:#C2461A;
+  --teal:#0C6A62; --teal-soft:#CDEBE6; --green:#189259; --green-soft:#CDEFDD;
+  --cream:#FFF8EF; --sun:#F6A623; --sun-soft:#FCE7BE; --pink-soft:#FBD6D6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);
+  font-family:"Comic Sans MS","Chalkboard SE","Comic Neue",-apple-system,"PingFang SC",sans-serif;
+  font-size:17px;line-height:1.55}
+.wrap{max-width:860px;margin:0 auto;padding:18px 16px 80px}
+header.top{background:#fff;border-radius:18px;padding:18px 20px;margin-bottom:14px;
+  border:3px solid var(--orange);box-shadow:0 3px 0 var(--orange-soft)}
+h1{font-size:1.35em;margin:0 0 4px;color:var(--orange-deep)}
+.pill{display:inline-block;background:var(--teal-soft);color:var(--teal);border-radius:999px;
+  padding:2px 12px;font-size:.8em;margin-right:6px}
+.meta{font-size:.85em;color:#666}
+section.part{background:#fff;border-radius:18px;padding:16px 18px;margin:16px 0;border:2px solid #eee}
+h2{font-size:1.1em;background:var(--orange-soft);color:var(--orange-deep);
+  padding:8px 14px;border-radius:12px;margin:0 0 12px}
+h3{font-size:1em;color:var(--teal);margin:18px 0 8px}
+.marks{float:right;color:var(--orange);font-size:.85em;font-weight:700}
+.tag{display:inline-block;background:var(--teal-soft);color:var(--teal);border-radius:8px;
+  padding:1px 8px;font-size:.72em;margin-left:6px;vertical-align:middle}
+.anchor-tag{background:var(--sun-soft);color:#7a5200}
+.bank{background:#F3F7F4;border:2px dashed #8bbfae;border-radius:12px;padding:10px 14px;margin:8px 0;font-size:.95em}
+.passage{background:#FBF7EF;border-left:8px solid var(--sun);border-radius:0 12px 12px 0;
+  padding:12px 16px;margin:10px 0;text-align:justify}
+.passage p{margin:0 0 10px}
+.passage .pl{color:var(--teal);font-weight:700;margin-right:4px}
+.gloss{font-size:.82em;color:#7a5200;background:var(--sun-soft);border-radius:10px;padding:6px 12px;margin:6px 0}
+.q{margin:14px 0;padding:10px 12px;border-radius:12px;background:#fafafa;border:1.5px solid #eee}
+.q .qt{margin-bottom:8px}
+label.opt{display:block;padding:10px 12px;margin:6px 0;border:2px solid #e5e0d8;border-radius:12px;
+  background:#fff;cursor:pointer;min-height:44px}
+label.opt:hover{border-color:var(--sun)}
+label.opt input{margin-right:8px;transform:scale(1.25)}
+input[type=text]{font-family:inherit;font-size:1em;border:none;border-bottom:2px solid #999;
+  background:transparent;min-width:130px;padding:6px 4px;text-align:center}
+input[type=text]:focus{outline:none;border-bottom-color:var(--orange)}
+select{font-family:inherit;font-size:.95em;padding:8px;border-radius:10px;border:2px solid #e5e0d8;
+  background:#fff;min-height:44px;max-width:100%}
+textarea{width:100%;min-height:180px;font-family:inherit;font-size:1em;border:2px solid #e5e0d8;
+  border-radius:12px;padding:12px;resize:vertical}
+textarea:focus{outline:none;border-color:var(--orange)}
+.note{background:var(--sun-soft);border-radius:10px;padding:8px 12px;font-size:.85em;color:#7a5200;margin:8px 0}
+.selfcheck label{display:block;margin:6px 0;min-height:32px}
+.btn{display:block;width:100%;min-height:56px;font-family:inherit;font-size:1.15em;font-weight:700;
+  background:var(--orange);color:#fff;border:none;border-radius:16px;cursor:pointer;margin:20px 0 8px}
+.btn:hover{background:var(--orange-deep)}
+.btn[disabled]{background:#ccc;cursor:not-allowed}
+#resultCard{display:none;background:#fff;border:3px solid var(--green);border-radius:18px;padding:18px 20px;margin:16px 0}
+#resultCard h2{background:var(--green-soft);color:#0f6b41}
+.scoreRow{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+.scoreBox{flex:1 1 150px;background:var(--cream);border-radius:14px;padding:12px;text-align:center}
+.scoreBox .big{font-size:1.6em;font-weight:700;color:var(--orange-deep)}
+.stratTable{width:100%;border-collapse:collapse;font-size:.85em;margin:10px 0}
+.stratTable th{background:var(--teal-soft);color:var(--teal);padding:6px 8px;text-align:left}
+.stratTable td{border-top:1px solid #eee;padding:6px 8px}
+.flag{background:var(--pink-soft);color:#8c2020;border-radius:10px;padding:8px 12px;font-size:.9em;margin:8px 0}
+#copyBlock{width:100%;min-height:120px;font-size:.8em;font-family:monospace}
+.wordcount{font-size:.85em;color:#666;text-align:right}
+.missWarn{background:var(--pink-soft);color:#8c2020;border-radius:10px;padding:10px 14px;margin:10px 0;display:none}
+@media (max-width:600px){body{font-size:16px}.wrap{padding:12px 10px 60px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <h1>Value &amp; Journeys — Quiz</h1>
+  <div><span class="pill">RE2 · Units 7–8</span><span class="pill">60–75 minutes</span><span class="pill">100 marks</span></div>
+  <div class="meta" style="margin-top:6px">Name: <input type="text" id="stuName" placeholder="your name" style="min-width:160px;text-align:left"> &nbsp; Do the quiz in one sitting. Your teacher sees your time.</div>
+  <div class="note">Every reading question has a <b>strategy label</b>. You get a separate score for each strategy, so you can see which reading action is strong and which needs work. <b>Both texts are new</b> — you have not read them in class.</div>
+</header>
+
+<!-- ================= PART 1 VOCABULARY ================= -->
+<section class="part" id="part1">
+<h2>Part 1 · Words <span class="marks">30 marks</span></h2>
+
+<h3>1A · Summary gap-fill — NEW texts, not from your book <span class="tag">10 × 2 marks</span></h3>
+<div class="note">Use the word bank. <b>Watch the word form</b> — you may need to change it. Two words in each bank are extra.</div>
+
+<p><b>Text 1 · The Ten O&rsquo;Clock Show</b></p>
+<div class="bank">assume · claim · dominate · emphasis · guard · handle · prevent <span class="meta">(two are extra — change the form where needed)</span></div>
+<div class="passage">
+<p>For three years the school radio belonged to two boys who both played football, and nothing else ever reached the air. People began to say that the ten-minute show was <input type="text" id="v1" autocomplete="off"> by one sport. Then both boys left. For a whole term Ms Yan <input type="text" id="v2" autocomplete="off"> every show on her own — choosing, recording, cutting — and by November she had had enough. Six students now share the job, one weekday each. The <input type="text" id="v3" autocomplete="off"> has moved from match results to short interviews: who mended the piano, who feeds the cats behind C block. The commonest <input type="text" id="v4" autocomplete="off"> among listeners is that a teacher still picks the topics; in fact the six of them argue it out on Fridays. There is one rule — nobody speaks for longer than two minutes — and even that does not <input type="text" id="v5" autocomplete="off"> the arguments. It only makes them shorter.</p>
+</div>
+
+<p><b>Text 2 · The Code List</b></p>
+<div class="bank">abandon · consider · intention · perceive · prior · translate · wisdom <span class="meta">(two are extra — change the form where needed)</span></div>
+<div class="passage">
+<p>Rescue teams in the hills talk in short radio codes. A code is one number and one letter, because a long sentence breaks up in bad weather. Whole words were <input type="text" id="v7" autocomplete="off"> in 2016 and have not been used since; two teams had spent an hour arguing about one word that neither of them could hear properly. New volunteers spend their first month on the code list, and at the end of it there is a short test. The <input type="text" id="v6" autocomplete="off"> has to happen in about two seconds. Ann Doyle, who trains the volunteers, says the <input type="text" id="v8" autocomplete="off"> behind the codes was never to keep things secret; anyone can look the list up online. Before the change, the team <input type="text" id="v9" autocomplete="off"> letting each valley keep its own words. They dropped that idea in one meeting. What still surprises Ann is how differently new volunteers <input type="text" id="v10" autocomplete="off"> the codes. Some find them cold. Others say they are the calmest thing on the radio.</p>
+</div>
+
+<h3>1B · Old words — from Units 4–5 <span class="tag">5 × 2 marks</span></h3>
+<div class="note">You met these words about two months ago. This score is counted separately — it shows what you still remember.</div>
+<div class="bank">arrange · craft · debt · identity · notice · promote <span class="meta">(one is extra — change the form where needed)</span></div>
+<div class="q"><div class="qt">1. She had paid off every <input type="text" id="o1" autocomplete="off"> by the time she was thirty.</div></div>
+<div class="q"><div class="qt">2. The library <input type="text" id="o2" autocomplete="off"> its shelves by colour, which looked good and helped nobody.</div></div>
+<div class="q"><div class="qt">3. Two of the letters were signed only &ldquo;R.&rdquo;, so his <input type="text" id="o3" autocomplete="off"> is still unknown.</div></div>
+<div class="q"><div class="qt">4. Nobody <input type="text" id="o4" autocomplete="off"> the small door behind the stairs until the wall was taken down.</div></div>
+<div class="q"><div class="qt">5. The festival was set up to <input type="text" id="o5" autocomplete="off"> local music, not to make money.</div></div>
+</section>
+
+<!-- ================= PART 2 READING ================= -->
+<section class="part" id="part2">
+<h2>Part 2 · Reading <span class="marks">45 marks</span></h2>
+<div class="note">Two NEW texts — you have not read them before. Read each one once, then answer.</div>
+
+<h3>Reading 1 · One Word, Two Trades</h3>
+<div class="passage">
+<p><span class="pl">A</span>In a printing shop, a <i>plate</i> is a flat piece of metal that carries the image. In a kitchen, a plate is what dinner arrives on. Nobody confuses the two, because the rooms are so different.</p>
+<p><span class="pl">B</span>The trouble starts when two trades share a room. A hospital and a builder both use the word <i>bay</i>: for the nurse it is a curtained space with four beds in it; for the builder it is the space between two columns that hold up the roof. When a new wing was being planned in one city, the drawings came back with six bays where the ward needed four. The mistake cost eleven weeks.</p>
+<p><span class="pl">C</span>Both trades were right, and both had used the word correctly for a hundred years. Neither of them had thought to ask what the other one meant. The word looked so ordinary that it never raised a hand.</p>
+<p><span class="pl">D</span>The hospital now keeps a one-page list of about thirty such words, and every drawing comes with it. The builders keep the same list. It is not a dictionary — it only holds the words where the two trades disagree.</p>
+<p><span class="pl">E</span>The lesson was cheap in the end. The expensive words are not the long ones you look up. They are the short ones you think you already share.</p>
+</div>
+<div class="gloss">ward 病房 · column 柱子 · wing（建筑的）侧楼 · curtained 拉着帘子的</div>
+
+<div class="q"><div class="qt"><b>Q1.</b> What is the text mainly about? <span class="tag">strategy: main idea</span> <span class="marks">4</span></div>
+<label class="opt"><input type="radio" name="r1" value="a">a. how one city trained its builders to work alongside hospital nurses</label>
+<label class="opt"><input type="radio" name="r1" value="b">b. how one ordinary word can mean two things and cost a lot of time</label>
+<label class="opt"><input type="radio" name="r1" value="c">c. why a printing shop and a kitchen both keep flat pieces of metal</label>
+</div>
+
+<div class="q"><div class="qt"><b>Q2.</b> Write <b>H</b> (true of the hospital only), <b>B</b> (true of the builder only) or <b>BOTH</b>. <span class="tag">strategy: summarizing (Venn)</span> <span class="marks">5</span></div>
+<div class="qt">1. uses the word <i>bay</i> &nbsp; <select id="m1"><option value="">choose</option><option>H</option><option>B</option><option>BOTH</option></select></div>
+<div class="qt">2. means a curtained space with four beds in it &nbsp; <select id="m2"><option value="">choose</option><option>H</option><option>B</option><option>BOTH</option></select></div>
+<div class="qt">3. means the space between two columns &nbsp; <select id="m3"><option value="">choose</option><option>H</option><option>B</option><option>BOTH</option></select></div>
+<div class="qt">4. keeps the one-page list now &nbsp; <select id="m4"><option value="">choose</option><option>H</option><option>B</option><option>BOTH</option></select></div>
+<div class="qt">5. needed four of them in the new ward &nbsp; <select id="m5"><option value="">choose</option><option>H</option><option>B</option><option>BOTH</option></select></div>
+</div>
+
+<div class="q"><div class="qt"><b>Q3.</b> In paragraph B the writer says <i>the nurse</i>. In paragraph D he does not say <i>the nurse</i> again. Which words does he use there for that same side? <span class="tag">strategy: synonyms</span> <span class="marks">4</span></div>
+<label class="opt"><input type="radio" name="r3" value="a">a. the ward</label>
+<label class="opt"><input type="radio" name="r3" value="b">b. the two trades</label>
+<label class="opt"><input type="radio" name="r3" value="c">c. the hospital</label>
+</div>
+
+<div class="q" data-anchor="1"><div class="qt"><b>Q4.</b> "It is not a dictionary — <b>it</b> only holds the words where the two trades disagree." What is <i>it</i>? <span class="tag">strategy: reference</span> <span class="marks">4</span></div>
+<label class="opt"><input type="radio" name="r4" value="a">a. the one-page list</label>
+<label class="opt"><input type="radio" name="r4" value="b">b. the drawing of the new wing</label>
+<label class="opt"><input type="radio" name="r4" value="c">c. the hospital</label>
+</div>
+
+<div class="q"><div class="qt"><b>Q5.</b> "The word looked so ordinary that it never <b>raised a hand</b>." <i>Raised a hand</i> here means: <span class="tag">strategy: guess from context</span> <span class="marks">3</span></div>
+<label class="opt"><input type="radio" name="r5" value="a">a. asked one of the builders for help with the drawing</label>
+<label class="opt"><input type="radio" name="r5" value="b">b. made anybody stop and check it</label>
+<label class="opt"><input type="radio" name="r5" value="c">c. pointed at the wrong part of the ward</label>
+</div>
+
+<div class="q" data-anchor="1"><div class="qt"><b>Q6.</b> Why does the writer end with "The expensive words are not the long ones you look up"? <span class="tag">strategy: inference</span> <span class="marks">4</span></div>
+<label class="opt"><input type="radio" name="r6" value="a">a. Because the long words are the ones that get looked up and checked in time.</label>
+<label class="opt"><input type="radio" name="r6" value="b">b. Because a dictionary costs more than most building projects can afford.</label>
+<label class="opt"><input type="radio" name="r6" value="c">c. Because the words nobody checks are the ones you think you share.</label>
+</div>
+
+<h3>Reading 2 · Three Hours a Year</h3>
+<div class="passage">
+<p><span class="pl">A</span>On one hillside in the north, a low white flower opens only after dark, and only for about three hours, on perhaps four nights each summer. Nobody can say in April which four nights they will be.</p>
+<p><span class="pl">B</span>So the picking team does everything else first. In March they clear the paths, because in the dark a root will break an ankle. In May they weigh and label the empty boxes, so that on the night nobody has to write anything. In June two people begin sleeping in a hut beside the field, and one of them walks the rows every evening at nine. When the first flower opens, that walker sends one message, and eleven people drive up the hill.</p>
+<p><span class="pl">C</span>The picking itself takes three hours. The year takes four months.</p>
+<p><span class="pl">D</span>In 2019 the message went out on a Tuesday and only six people came; the rest were at work and could not leave. Since then the team has agreed on something simple: everybody keeps four nights free in July, without knowing which four.</p>
+<p><span class="pl">E</span>A visitor once asked the oldest picker what the hardest part was. She said it was not the dark, and it was not the three hours. It was asking eleven people to hold four nights empty for a flower that might not open at all.</p>
+</div>
+<div class="gloss">hillside 山坡 · root 树根 · ankle 脚踝 · hut 小屋 · picker 采摘的人</div>
+
+<div class="q"><div class="qt"><b>Q7.</b> What is the best title for this text? <span class="tag">strategy: main idea</span> <span class="marks">4</span></div>
+<label class="opt"><input type="radio" name="r7" value="a">a. Getting Ready for Three Hours You Cannot Book</label>
+<label class="opt"><input type="radio" name="r7" value="b">b. How to Grow a White Flower</label>
+<label class="opt"><input type="radio" name="r7" value="c">c. A Summer Night on the Hill</label>
+</div>
+
+<div class="q"><div class="qt"><b>Q8.</b> Number these <b>1–4</b> in the order the team does them. <span class="tag">strategy: sequencing</span> <span class="marks">5</span></div>
+<div class="qt">
+<select id="s1"><option value="">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select> Two people move into the hut beside the field.<br>
+<select id="s2"><option value="">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select> The paths are cleared.<br>
+<select id="s3"><option value="">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select> Eleven people drive up the hill.<br>
+<select id="s4"><option value="">–</option><option>1</option><option>2</option><option>3</option><option>4</option></select> The empty boxes are weighed and labeled.
+</div>
+</div>
+
+<div class="q"><div class="qt"><b>Q9.</b> Match each step with the reason the text gives for it. <b>One reason is extra.</b> <span class="tag">strategy: detail — cause and reason</span> <span class="marks">4</span></div>
+<div class="bank" style="font-size:.85em">
+a. so that nobody has to write anything on the night<br>
+b. because in the dark a root will break an ankle<br>
+c. so that somebody is there to see the first flower open<br>
+d. because last time people were at work and could not leave<br>
+e. because the flower may not open at all</div>
+<div class="qt">1. Clearing the paths in March → <select id="p1"><option value="">choose</option><option>a</option><option>b</option><option>c</option><option>d</option><option>e</option></select></div>
+<div class="qt">2. Labeling the boxes in May → <select id="p2"><option value="">choose</option><option>a</option><option>b</option><option>c</option><option>d</option><option>e</option></select></div>
+<div class="qt">3. Sleeping in the hut from June → <select id="p3"><option value="">choose</option><option>a</option><option>b</option><option>c</option><option>d</option><option>e</option></select></div>
+<div class="qt">4. Keeping four nights free in July → <select id="p4"><option value="">choose</option><option>a</option><option>b</option><option>c</option><option>d</option><option>e</option></select></div>
+</div>
+
+<div class="q" data-anchor="1"><div class="qt"><b>Q10.</b> Answer with <b>two or three words from the text</b>. <span class="tag">strategy: scanning</span> <span class="marks">4</span></div>
+<div class="qt">1. How long does the picking itself take? <input type="text" id="sc1" autocomplete="off" style="min-width:150px"></div>
+<div class="qt">2. In which year did only six people come? <input type="text" id="sc2" autocomplete="off" style="min-width:110px"></div>
+</div>
+
+<div class="q"><div class="qt"><b>Q11.</b> Complete these short notes with <b>one word</b> or a number. The words you need are <b>not</b> all sitting next to each other in the text. <span class="tag">strategy: taking notes</span> <span class="marks">2</span></div>
+<div class="qt">
+&bull; Team on the night = <input type="text" id="n1" autocomplete="off" style="min-width:90px"> people<br>
+&bull; Oldest picker: hardest part = asking them to keep four nights <input type="text" id="n2" autocomplete="off" style="min-width:110px">
+</div>
+</div>
+
+<div class="q"><div class="qt"><b>Q12.</b> A concept map puts the big idea on top and the smaller ones underneath it. Fill the two grey boxes for Reading 2. <span class="tag">strategy: concept map</span> <span class="marks">2</span></div>
+<div class="bank" style="font-size:.85em">
+a. three hours of picking on one summer night<br>
+b. the work that comes before those three hours<br>
+c. a white flower that opens only after dark, four nights a year<br>
+d. eleven people driving up the hill after one message<br>
+e. getting eleven people to keep four nights free</div>
+<div class="qt" style="line-height:2">
+TOP BOX &rarr; <select id="cm1"><option value="">choose</option><option>a</option><option>b</option><option>c</option><option>d</option><option>e</option></select><br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── March: clear the paths<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── May: weigh and label the boxes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── June: two people sleep in the hut<br>
+AND THE HARDEST PART OF IT &rarr; <select id="cm2"><option value="">choose</option><option>a</option><option>b</option><option>c</option><option>d</option><option>e</option></select>
+</div>
+</div>
+</section>
+
+<!-- ================= PART 3 WRITING ================= -->
+<section class="part" id="part3">
+<h2>Part 3 · Write <span class="marks">25 marks</span></h2>
+<div class="qt">Choose <b>ONE</b> question and write a short paragraph of <b>5–6 sentences</b>: your <b>point</b>, your <b>reason</b>, and <b>one example</b>.</div>
+<label class="opt"><input type="radio" name="wchoice" value="A">A. The picking team spends four months getting ready for three hours. Is that a good use of a year? Why?</label>
+<label class="opt"><input type="radio" name="wchoice" value="B">B. Two groups used the same word for a hundred years and never checked what the other one meant. What should people do when they think they already agree?</label>
+<div class="note">Use at least <b>two</b> of these words: <i>considerable · obtain · objective · undertake · prior · regard</i>. No sentence frames this time — you have done this in class and in homework.</div>
+<textarea id="writing" placeholder="Write your paragraph here…"></textarea>
+<div class="wordcount"><span id="wc">0</span> words</div>
+<div class="selfcheck">
+<b>Before you submit — tick what is true:</b>
+<label><input type="checkbox" id="sc_1"> I answered the question I chose (point + reason + example).</label>
+<label><input type="checkbox" id="sc_2"> I used at least two of the listed words.</label>
+<label><input type="checkbox" id="sc_3"> I read my paragraph once more and fixed what did not make sense.</label>
+</div>
+</section>
+
+<div class="missWarn" id="missWarn"></div>
+<button class="btn" id="submitBtn">Finish &amp; see my scores</button>
+
+<!-- ================= RESULT ================= -->
+<section id="resultCard">
+<h2>Your results</h2>
+<div class="scoreRow">
+  <div class="scoreBox"><div>Words</div><div class="big" id="sVocab">–</div><div class="meta">/ 30</div></div>
+  <div class="scoreBox"><div>Old words (U4–5)</div><div class="big" id="sOld">–</div><div class="meta">/ 10 (inside Words)</div></div>
+  <div class="scoreBox"><div>Reading</div><div class="big" id="sRead">–</div><div class="meta">/ 45</div></div>
+  <div class="scoreBox"><div>Writing</div><div class="big">✍</div><div class="meta">teacher marks / 25</div></div>
+</div>
+<div id="speedFlag"></div>
+<h3>Reading — strategy by strategy</h3>
+<table class="stratTable" id="stratTable"><tr><th>Strategy</th><th>Score</th></tr></table>
+<h3>For your teacher — copy this whole box and send it the usual way</h3>
+<textarea id="copyBlock" readonly></textarea>
+<div class="note">Your writing is included in the box above. Your teacher will mark it with the class rubric.</div>
+</section>
+
+</div>
+<script>
+(function(){
+"use strict";
+var startTime = Date.now();
+
+/* Answer key, lightly encoded (base64) so it is not readable at a glance in view-source. */
+var KEY = JSON.parse(atob(
+"eyJvMSI6IFsiZGVidCJdLCAibzIiOiBbImFycmFuZ2VkIl0sICJvMyI6IFsiaWRlbnRpdHkiXSwgIm80IjogWyJub3RpY2VkIl0sICJvNSI6IFsicHJvbW90ZSJdLCAicjEiOiAiYiIsICJtMSI6ICJCT1RIIiwgIm0yIjogIkgiLCAibTMiOiAiQiIsICJtNCI6ICJCT1RIIiwgIm01IjogIkgiLCAicjMiOiAiYyIsICJyNCI6ICJhIiwgInI1IjogImIiLCAicjYiOiAiYyIsICJyNyI6ICJhIiwgInMxIjogIjMiLCAiczIiOiAiMSIsICJzMyI6ICI0IiwgInM0IjogIjIiLCAicDEiOiAiYiIsICJwMiI6ICJhIiwgInAzIjogImMiLCAicDQiOiAiZCIsICJzYzEiOiBbInRocmVlIGhvdXJzIiwgIjMgaG91cnMiLCAidGhyZWUgaG91ciJdLCAic2MyIjogWyIyMDE5IiwgImluIDIwMTkiXSwgIm4xIjogWyJlbGV2ZW4iLCAiMTEiXSwgIm4yIjogWyJlbXB0eSIsICJmcmVlIl0sICJ2MSI6IFsiZG9taW5hdGVkIl0sICJ2MiI6IFsiaGFuZGxlZCJdLCAidjMiOiBbImVtcGhhc2lzIl0sICJ2NCI6IFsiYXNzdW1wdGlvbiJdLCAidjUiOiBbInByZXZlbnQiXSwgInY2IjogWyJ0cmFuc2xhdGlvbiJdLCAidjciOiBbImFiYW5kb25lZCJdLCAidjgiOiBbImludGVudGlvbiJdLCAidjkiOiBbImNvbnNpZGVyZWQiXSwgInYxMCI6IFsicGVyY2VpdmUiXSwgImNtMSI6ICJiIiwgImNtMiI6ICJlIn0="));
+
+function txt(id){ var el=document.getElementById(id); return (el&&el.value||"").trim().toLowerCase(); }
+function radio(name){ var r=document.querySelector('input[name="'+name+'"]:checked'); return r?r.value:""; }
+function sel(id){ var el=document.getElementById(id); return el?el.value:""; }
+
+var wEl=document.getElementById('writing');
+wEl.addEventListener('input',function(){
+  var n=(wEl.value.trim().match(/\S+/g)||[]).length;
+  document.getElementById('wc').textContent=n;
+});
+
+document.getElementById('submitBtn').addEventListener('click',function(){
+  var gapIds=["v1","v2","v3","v4","v5","v6","v7","v8","v9","v10","o1","o2","o3","o4","o5",
+              "sc1","sc2","n1","n2"];
+  var radioNames=["r1","r3","r4","r5","r6","r7"];
+  var selIds=["m1","m2","m3","m4","m5","s1","s2","s3","s4","p1","p2","p3","p4","cm1","cm2"];
+  var missing=[];
+  gapIds.forEach(function(id){ if(!txt(id)) missing.push(id.toUpperCase()); });
+  radioNames.forEach(function(n){ if(!radio(n)) missing.push(n.toUpperCase()); });
+  selIds.forEach(function(id){ if(!sel(id)) missing.push(id.toUpperCase()); });
+  /* 2026-08-01 独立审查：原来这份清单覆盖 40 个客观点，唯独不含 writing 和 wchoice ——
+     也就是全卷分值最高的 25 分留空不提醒。补上。 */
+  if(!document.getElementById('writing').value.trim()) missing.push("PART 3 WRITING");
+  if(!radio('wchoice')) missing.push("PART 3 TOPIC");
+  var mw=document.getElementById('missWarn');
+  if(missing.length>0 && !this.dataset.forced){
+    mw.style.display='block';
+    mw.innerHTML='You left <b>'+missing.length+'</b> answers empty. Scroll back and check — or press the button again to submit anyway.';
+    this.dataset.forced='1';
+    return;
+  }
+  mw.style.display='none';
+
+  /* 2026-08-01 独立复核补：lev1 只认「多一个/少一个/换一个字母」，**不认相邻两个字母写反**，
+     而 percieve / recieve 这类换位恰恰是这个年龄段最常见的拼错。原来 perceive 写成 percieve 判 0 分 ——
+     那是拼写手滑，不是词形错（词形错另有 inflected() 在管，不受这条影响）。补一条相邻换位。 */
+  function swap1(a,b){
+    if(a.length!==b.length) return false;
+    var d=[];
+    for(var i=0;i<a.length;i++) if(a[i]!==b[i]) d.push(i);
+    return d.length===2 && d[1]===d[0]+1 && a[d[0]]===b[d[1]] && a[d[1]]===b[d[0]];
+  }
+  function lev1(a,b){
+    if(a===b) return true;
+    if(Math.abs(a.length-b.length)>1) return false;
+    var i=0,j=0,edits=0;
+    while(i<a.length&&j<b.length){
+      if(a[i]===b[j]){i++;j++;continue;}
+      if(++edits>1) return false;
+      if(a.length>b.length){i++;}
+      else if(b.length>a.length){j++;}
+      else {i++;j++;}
+    }
+    return edits+(a.length-i)+(b.length-j)<=1;
+  }
+  /* 2026-08-01 独立审查 BLOCKER：拼写容错把「改词形」这个考点整个吃掉了。
+     lev1 是给「长词打错一个字母」留的活口，不是给 dominate/dominates/dominated 留的。
+     所以先判屈折变体：只要输入是标准答案的其它词形，一律判错（这正是本卷要考的东西）。*/
+  /* 2026-08-01 独立复核抓到的判分 BLOCKER：原来这里只按 `es|ed|ing|s|d` 顺序剥一次后缀，
+     遇到 dominated 先吃掉 ed 得到 dominat（不是真词根），于是**真正的原形 dominate 不在 forms 里**，
+     inflected 返回 false，接着被 lev1 当成「长词打错一个字母」放行 ——
+     v1 写 dominate / o2 写 arrange 照样得分，而那正是这卷白纸黑字要考的错（共 4 分）。
+     凡是「原形以哑音 e 结尾、答案取 -d 过去式」的键全中招。
+     现在改成：先收集所有可能的词根（原词、去 s/es/d/ed/ing、ies→y），再由每个词根生成完整词族。 */
+  function inflected(v,k){
+    var stems={}, out={};
+    stems[k]=1;
+    [/s$/,/es$/,/d$/,/ed$/,/ing$/].forEach(function(re){
+      if(re.test(k)) stems[k.replace(re,"")]=1;
+    });
+    if(/ies$/.test(k)) stems[k.replace(/ies$/,"y")]=1;
+    Object.keys(stems).forEach(function(s){
+      if(!s) return;
+      [s,s+"s",s+"es",s+"d",s+"ed",s+"ing"].forEach(function(f){ out[f]=1; });
+      if(s.slice(-1)==="e"){ out[s.slice(0,-1)+"ing"]=1; }
+      else { out[s+"e"]=1; out[s+"es"]=1; out[s+"ed"]=1; }
+    });
+    delete out[k];
+    return !!out[v];
+  }
+  function gapOK(id){
+    var v=txt(id); if(!v) return false;
+    return KEY[id].some(function(k){
+      k=k.toLowerCase();
+      return v===k || (k.length>=8 && !inflected(v,k) && (lev1(v,k)||swap1(v,k)));
+    });
+  }
+
+  /* ---- Part 1 ---- */
+  var vocab=0, old=0;
+  ["v1","v2","v3","v4","v5","v6","v7","v8","v9","v10"].forEach(function(id){ if(gapOK(id)) vocab+=2; });
+  ["o1","o2","o3","o4","o5"].forEach(function(id){ if(gapOK(id)) old+=2; });
+  var vocabTotal=vocab+old;
+
+  /* ---- Part 2, scored strategy by strategy ---- */
+  /* 2026-08-01 第三棒改：Q3 从「一个词两个意思」的元语言送分题改成真的同义替换题
+     （7B2 Recognizing and Understanding Synonyms），桶名跟着从
+     "synonyms & word meaning" 改成 "synonyms"；taking notes 从 4 分压到 2 分
+     （删掉与 Q10 重复的 three hours 那格和两个逐字抄写格），腾出来的 2 分给
+     新增的 Q12 concept map（8B2 教的，原卷一题都没有）。Part 2 合计仍是 45。*/
+  var strat={"main idea":[0,8],"summarizing (Venn)":[0,5],"synonyms":[0,4],
+             "reference & inference":[0,8],"guess from context":[0,3],"sequencing":[0,5],
+             "detail — cause and reason":[0,4],"scanning":[0,4],"taking notes":[0,2],
+             "concept map":[0,2]};
+  var read=0;
+  function add(bucket,pts){ read+=pts; strat[bucket][0]+=pts; }
+
+  if(radio('r1')===KEY.r1) add("main idea",4);
+  if(radio('r7')===KEY.r7) add("main idea",4);
+
+  var vOK=0; ["m1","m2","m3","m4","m5"].forEach(function(id){ if(sel(id)===KEY[id]) vOK++; });
+  add("summarizing (Venn)",vOK);
+
+  if(radio('r3')===KEY.r3) add("synonyms",4);
+  if(radio('r4')===KEY.r4) add("reference & inference",4);
+  if(radio('r6')===KEY.r6) add("reference & inference",4);
+  if(radio('r5')===KEY.r5) add("guess from context",3);
+
+  var qOK=0; ["s1","s2","s3","s4"].forEach(function(id){ if(sel(id)===KEY[id]) qOK++; });
+  add("sequencing", qOK===4?5:qOK);
+
+  var pOK=0; ["p1","p2","p3","p4"].forEach(function(id){ if(sel(id)===KEY[id]) pOK++; });
+  add("detail — cause and reason",pOK);
+
+  var scOK=0; ["sc1","sc2"].forEach(function(id){ if(gapOK(id)) scOK++; });
+  add("scanning",scOK*2);
+
+  var nOK=0; ["n1","n2"].forEach(function(id){ if(gapOK(id)) nOK++; });
+  add("taking notes",nOK);
+
+  var cmOK=0; ["cm1","cm2"].forEach(function(id){ if(sel(id)===KEY[id]) cmOK++; });
+  add("concept map",cmOK);
+
+  var mins=Math.round((Date.now()-startTime)/60000);
+  var flagged=mins<15;
+
+  document.getElementById('sVocab').textContent=vocabTotal;
+  document.getElementById('sOld').textContent=old;
+  document.getElementById('sRead').textContent=read;
+  var st=document.getElementById('stratTable');
+  Object.keys(strat).forEach(function(k){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+k+'</td><td>'+strat[k][0]+' / '+strat[k][1]+'</td>';
+    st.appendChild(tr);
+  });
+  var sf=document.getElementById('speedFlag');
+  if(flagged){ sf.innerHTML='<div class="flag">Finished in '+mins+' minutes — that is unusually fast. Your score bar is marked so your teacher knows to look at this one before entering it.</div>'; }
+
+  var lines=[];
+  lines.push('RE2-QUIZ-U7U8 | name: '+(document.getElementById('stuName').value||'(no name)'));
+  lines.push('time_min: '+mins+(flagged?' [FLAG: unusually fast — do not auto-record]':''));
+  lines.push('vocab: '+vocabTotal+'/30 (new: '+vocab+'/20, old_U4-5: '+old+'/10)');
+  lines.push('reading: '+read+'/45');
+  Object.keys(strat).forEach(function(k){ lines.push('  strategy | '+k+': '+strat[k][0]+'/'+strat[k][1]); });
+  lines.push('anchors | reference Q4: '+(radio('r4')===KEY.r4?1:0)+' | inference Q6: '+(radio('r6')===KEY.r6?1:0)+' | scanning Q10: '+scOK+'/2');
+  lines.push('writing_choice: '+(radio('wchoice')||'(none)'));
+  lines.push('self_check: '+[ 'sc_1','sc_2','sc_3' ].map(function(i){return document.getElementById(i).checked?'y':'n';}).join(''));
+  lines.push('--- writing (teacher marks /25 with class rubric) ---');
+  lines.push(document.getElementById('writing').value||'(empty)');
+  document.getElementById('copyBlock').value=lines.join('\n');
+
+  document.getElementById('resultCard').style.display='block';
+  this.disabled=true;
+  this.textContent='Submitted — scroll down for your results';
+  document.getElementById('resultCard').scrollIntoView({behavior:'smooth'});
+});
+})();
+</script>
+</body>
+</html>
