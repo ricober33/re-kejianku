@@ -1,6 +1,6 @@
 {
-  "site_version": "2.3.0",
-  "updated_at": "2026-08-13T01:05:00+08:00",
+  "site_version": "2.4.0",
+  "updated_at": "2026-08-13T02:30:00+08:00",
   "content": {
     "re2-unit-1-1a1": {
       "version": "1.0.0",
@@ -105,6 +105,22 @@
     "re2-unit-8-u7-u8-quiz": {
       "version": "1.0.0",
       "path": "/re2/unit-8/u7-u8-quiz/"
+    },
+    "re2-unit-9-9a1": {
+      "version": "1.0.0",
+      "path": "/re2/unit-9/9a1/"
+    },
+    "re2-unit-9-9a2": {
+      "version": "1.0.0",
+      "path": "/re2/unit-9/9a2/"
+    },
+    "re2-unit-9-9b1": {
+      "version": "1.0.0",
+      "path": "/re2/unit-9/9b1/"
+    },
+    "re2-unit-9-9b2": {
+      "version": "1.0.0",
+      "path": "/re2/unit-9/9b2/"
     }
   }
 }
