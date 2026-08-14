@@ -1,6 +1,6 @@
 {
-  "site_version": "2.6.0",
-  "updated_at": "2026-08-13T09:30:00+08:00",
+  "site_version": "2.7.0",
+  "updated_at": "2026-08-14T00:00:00+08:00",
   "content": {
     "re2-unit-1-1a1": {
       "version": "1.0.0",
@@ -153,6 +153,22 @@
     "re2-unit-9-9b2": {
       "version": "1.0.0",
       "path": "/re2/unit-9/9b2/"
+    },
+    "re2-unit-12-12a1": {
+      "version": "1.0.0",
+      "path": "/re2/unit-12/12a1/"
+    },
+    "re2-unit-12-12a2": {
+      "version": "1.0.0",
+      "path": "/re2/unit-12/12a2/"
+    },
+    "re2-unit-12-12b1": {
+      "version": "1.0.0",
+      "path": "/re2/unit-12/12b1/"
+    },
+    "re2-unit-12-12b2": {
+      "version": "1.0.0",
+      "path": "/re2/unit-12/12b2/"
     }
   }
 }
