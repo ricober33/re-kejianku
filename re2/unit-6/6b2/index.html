@@ -624,6 +624,28 @@ window.LESSON = { id:'6B2', title:'The Truth About Great Whites · Contrast', sl
   // ---------- 各类型渲染 ----------
   const R = {};
 
+  /* ── 2026-08-18 老师反馈修：词库摆放顺序 == 答案顺序，学生从左到右点就全对。
+     ORD_shuffle 做两件事：① 打散；② 保证任一格位上的词 != 该格位的答案。
+     种子来自内容哈希，所以同一页每次渲染顺序固定（截图可复现、带课卡对得上），
+     不同页之间顺序不同。全 ES5 写法，旧 WebKit（ClassIn 内置浏览器）能跑。 */
+  function ORD_seed(str){var h=5381;for(var i=0;i<str.length;i++){h=(h*33+str.charCodeAt(i))%4294967296;}return h;}
+  function ORD_rnd(seed){var s=seed||1;return function(){s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
+  function ORD_shuffle(list,ansSeq){
+    if(!list||list.length<2)return (list||[]).slice();
+    ansSeq=ansSeq||[];
+    var n=list.length,rnd=ORD_rnd(ORD_seed(list.join('|')+'#'+ansSeq.join('|'))),a=list.slice(),i,j,x,t;
+    function clash(arr){for(var k=0;k<arr.length&&k<ansSeq.length;k++){if(arr[k]===ansSeq[k])return true;}return false;}
+    for(t=0;t<80;t++){
+      a=list.slice();
+      for(i=n-1;i>0;i--){j=Math.floor(rnd()*(i+1));x=a[i];a[i]=a[j];a[j]=x;}
+      if(!clash(a))return a;
+    }
+    for(i=0;i<a.length&&i<ansSeq.length;i++){if(a[i]===ansSeq[i]){j=(i+1)%n;x=a[i];a[i]=a[j];a[j]=x;}}
+    return a;
+  }
+  function ORD_gapAns(s){var m=s.answers||{},ks=Object.keys(m).sort(function(x,y){return (+x)-(+y);}),out=[],seen={};
+    ks.forEach(function(k){var w=m[k];if(w&&!seen[w]){seen[w]=1;out.push(w);}});return out;}
+
   R.hero = (s)=>{ const d=el('div','slide hero '+('bg-'+(s.bg||'peach')));
     d.innerHTML = `${timerPill(s.timer)}<div class="lt">${eyebrow(s.eyebrow)}
       <h1>${rt(s.title)}</h1><div class="sub">${rt(s.sub)}</div>
@@ -745,15 +767,16 @@ window.LESSON = { id:'6B2', title:'The Truth About Great Whites · Contrast', sl
     addBlobs(d,s.bg||'lilac'); return d; };
 
   R.game = (s)=>{ const d=el('div','slide center '+('bg-'+(s.bg||'mint')));
-    d.innerHTML = `${timerPill(s.timer)}<div class="scorepill">⭐ <span class="sc">0</span> / ${s.rounds.length}</div>
+    d.innerHTML = `${timerPill(s.timer)}<div class="scorepill"><span class="qn">Q1 of ${s.rounds.length}</span> · ⭐ <span class="sc">0</span></div>
       ${eyebrow(s.eyebrow||'Game · choose the word')}<h2 style="font-size:4cqh">${rt(s.title||'Which word matches?')}</h2>
       <div class="game-def"></div><div class="opts"></div><div class="gamemsg"></div>`;
     addBlobs(d,s.bg||'mint');
     let i=0, score=0; const defEl=d.querySelector('.game-def'), optsEl=d.querySelector('.opts'),
-      msgEl=d.querySelector('.gamemsg'), scEl=d.querySelector('.sc');
-    function round(){ const r=s.rounds[i]; defEl.innerHTML=rt(r.def); optsEl.innerHTML=''; msgEl.textContent='';
+      msgEl=d.querySelector('.gamemsg'), scEl=d.querySelector('.sc'), qnEl=d.querySelector('.qn');
+    function round(){ const r=s.rounds[i]; if(qnEl) qnEl.textContent='Q'+(i+1)+' of '+s.rounds.length; defEl.innerHTML=rt(r.def); optsEl.innerHTML=''; msgEl.textContent='';
       r.opts.forEach(o=>{ const b=el('div','opt',o); b.addEventListener('click',()=>{
         if(o===r.ans){ b.classList.add('right'); score++; scEl.textContent=score;
+          if(qnEl && i===s.rounds.length-1) qnEl.textContent='Done';
           msgEl.textContent = i===s.rounds.length-1?'🎉 All done!':'✓ Nice!';
           [...optsEl.children].forEach(x=>x.style.pointerEvents='none');
           setTimeout(()=>{ i++; if(i<s.rounds.length) round(); }, 750);
@@ -789,7 +812,7 @@ window.LESSON = { id:'6B2', title:'The Truth About Great Whites · Contrast', sl
     let n=0; const html = s.text.replace(/\{(\d+)\}/g,(m,k)=>`<span class="blank" data-k="${k}">?</span>`);
     d.innerHTML = `${timerPill(s.timer)}${eyebrow(s.eyebrow||'Vocabulary · fill the gaps')}<h2 style="font-size:4cqh">${rt(s.title||'Complete the passage')}</h2>
       <div class="card" style="margin-top:2cqh"><div class="gaptext">${rt(html)}</div></div>
-      <div class="wrap" style="margin-top:2.4cqh;justify-content:center">${s.words.map(w=>`<span class="chip word" draggable="false" data-w="${w}" style="--cl:var(--teal-l);--c:var(--teal-d)">${w}</span>`).join('')}</div>
+      <div class="wrap" style="margin-top:2.4cqh;justify-content:center">${ORD_shuffle(s.words,ORD_gapAns(s)).map(w=>`<span class="chip word" draggable="false" data-w="${w}" style="--cl:var(--teal-l);--c:var(--teal-d)">${w}</span>`).join('')}</div>
       <div class="gamemsg"></div>`;
     addBlobs(d,s.bg||'lemon');
     let sel=null; const msg=d.querySelector('.gamemsg');

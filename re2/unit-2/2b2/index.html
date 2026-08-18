@@ -596,6 +596,28 @@ window.LESSON={ id:'2B2', slides:[
   function eye(d){return d.eyebrow?`<div class="eyebrow">${d.eyebrow}</div>`:'';}
   function tag(d){return d.tagline?`<span class="tag">${d.tagline}</span>`:'';}
 
+  /* ── 2026-08-18 老师反馈修：词库摆放顺序 == 答案顺序，学生从左到右点就全对。
+     ORD_shuffle 做两件事：① 打散；② 保证任一格位上的词 != 该格位的答案。
+     种子来自内容哈希，所以同一页每次渲染顺序固定（截图可复现、带课卡对得上），
+     不同页之间顺序不同。全 ES5 写法，旧 WebKit（ClassIn 内置浏览器）能跑。 */
+  function ORD_seed(str){var h=5381;for(var i=0;i<str.length;i++){h=(h*33+str.charCodeAt(i))%4294967296;}return h;}
+  function ORD_rnd(seed){var s=seed||1;return function(){s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
+  function ORD_shuffle(list,ansSeq){
+    if(!list||list.length<2)return (list||[]).slice();
+    ansSeq=ansSeq||[];
+    var n=list.length,rnd=ORD_rnd(ORD_seed(list.join('|')+'#'+ansSeq.join('|'))),a=list.slice(),i,j,x,t;
+    function clash(arr){for(var k=0;k<arr.length&&k<ansSeq.length;k++){if(arr[k]===ansSeq[k])return true;}return false;}
+    for(t=0;t<80;t++){
+      a=list.slice();
+      for(i=n-1;i>0;i--){j=Math.floor(rnd()*(i+1));x=a[i];a[i]=a[j];a[j]=x;}
+      if(!clash(a))return a;
+    }
+    for(i=0;i<a.length&&i<ansSeq.length;i++){if(a[i]===ansSeq[i]){j=(i+1)%n;x=a[i];a[i]=a[j];a[j]=x;}}
+    return a;
+  }
+  function ORD_clozeAns(d){var out=[],seen={};(d.parts||[]).forEach(function(p){
+    if(p&&typeof p==='object'&&p.w&&!seen[p.w]){seen[p.w]=1;out.push(p.w);}});return out;}
+
   const R = {
     hero: d => `<div class="bg" style="background-image:url('${imgsrc(d.img)}')"></div><div class="veil"></div>
       <div class="body">
@@ -625,7 +647,7 @@ window.LESSON={ id:'2B2', slides:[
         <div class="face back"><div class="w">${c.w}</div><div class="def">${c.def}</div><div class="ex">&ldquo;${hl(c.ex)}&rdquo;</div></div></div></div>`).join('')}</div>`,
     quickset: d => `${tag(d)}${eye(d)}<h2 class="d">${d.title}</h2><div class="rule"></div>
       <div class="qsgrid">${d.words.map(w=>`<div class="qsrow"><div class="w">${w.w}<small>${w.pos||''}</small></div><div class="d">${hl(w.def)}</div></div>`).join('')}</div>`,
-    wordGame: d => `${tag(d)}<div class="scorebar">0 / ${d.rounds.length}</div>${eye(d)}
+    wordGame: d => `${tag(d)}<div class="scorebar">Q1 of ${d.rounds.length} &middot; &#11088; 0</div>${eye(d)}
       <div class="wm-def"></div><div class="wm-opts"></div><div class="wm-msg"></div>`,
     kickGame: d => `<div class="pitch"><div class="goal"></div><div class="goallabel">${d.goalLabel||'CUT DOWN &#9917;'}</div>
       <div class="khead">${eye(d)}<h2 class="d">${d.q}</h2><p>${d.sub||''}</p></div>
@@ -677,7 +699,7 @@ window.LESSON={ id:'2B2', slides:[
         <div class="qcface qcfront"><div class="qcq">${hl(c.q)}</div><div class="qchint">tap to reveal</div></div>
         <div class="qcface qcback"><div class="qca">${hl(c.a)}</div></div></div></div>`).join('')}</div>`,
     cloze: d => `${tag(d)}${eye(d)}<h2 class="d">${d.title}</h2><div class="rule"></div>
-      <div class="wbank" data-bank>${d.bank.map(w=>`<button class="wchip" data-w="${w}">${w}</button>`).join('')}</div>
+      <div class="wbank" data-bank>${ORD_shuffle(d.bank,ORD_clozeAns(d)).map(w=>`<button class="wchip" data-w="${w}">${w}</button>`).join('')}</div>
       <p class="clozep">${d.parts.map(p=> (typeof p==='string') ? hl(p) : `<span class="blank" data-w="${p.w}">${p.n}</span>`).join('')}</p>
       <div class="cmsg"></div>`,
     /* synMatch — tap a word, then tap the word that means (almost) the same.
@@ -721,11 +743,14 @@ window.LESSON={ id:'2B2', slides:[
     wordGame(sec,s){
       const def=sec.querySelector('.wm-def'),opts=sec.querySelector('.wm-opts'),msg=sec.querySelector('.wm-msg'),sb=sec.querySelector('.scorebar');
       let i=0,score=0;
+      /* 2026-08-18：原来计分条只写 0/5，屏幕上却只有一题，老师以为课件只出了一题。改成报第几题+得分。 */
+      function bar(){sb.innerHTML=(i>=s.rounds.length)?('Done &middot; &#11088; '+score+' of '+s.rounds.length):('Q'+(i+1)+' of '+s.rounds.length+' &middot; &#11088; '+score);}
       function render(){
+        bar();
         if(i>=s.rounds.length){def.textContent='';opts.innerHTML='';msg.innerHTML='All done &mdash; '+score+' / '+s.rounds.length+' correct! &#9989;';return;}
         const r=s.rounds[i];def.textContent=r.def;msg.textContent='';opts.innerHTML='';
         r.opts.forEach(o=>{const b=document.createElement('button');b.className='wm-opt';b.textContent=o;
-          b.onclick=()=>{if(o===r.ans){b.classList.add('right');score++;sb.textContent=score+' / '+s.rounds.length;msg.style.color='';msg.textContent='Yes! '+o;setTimeout(()=>{i++;render();},700);}
+          b.onclick=()=>{if(o===r.ans){b.classList.add('right');score++;bar();msg.style.color='';msg.textContent='Yes! '+o;setTimeout(()=>{i++;render();},700);}
             else{b.classList.add('wrong');msg.style.color='#B85C39';msg.textContent='Not quite — try again';setTimeout(()=>{b.classList.remove('wrong');msg.textContent='';},600);}};
           opts.appendChild(b);});
       }
