@@ -769,18 +769,27 @@ window.LESSON = { id:'6B2', title:'The Truth About Great Whites · Contrast', sl
   R.game = (s)=>{ const d=el('div','slide center '+('bg-'+(s.bg||'mint')));
     d.innerHTML = `${timerPill(s.timer)}<div class="scorepill"><span class="qn">Q1 of ${s.rounds.length}</span> · ⭐ <span class="sc">0</span></div>
       ${eyebrow(s.eyebrow||'Game · choose the word')}<h2 style="font-size:4cqh">${rt(s.title||'Which word matches?')}</h2>
-      <div class="game-def"></div><div class="opts"></div><div class="gamemsg"></div>`;
+      <div class="game-def"></div><div class="opts"></div><div class="gamemsg"></div>
+      <div class="game-pips" style="display:flex;justify-content:center;align-items:center;gap:1.3cqw;margin-top:1.4cqh">${s.rounds.map((r,k)=>`<i data-pip="${k}" style="width:1.7cqh;height:1.7cqh;border-radius:999px;background:#DCEBE1;box-shadow:inset 0 0 0 .25cqh #BFD9C7;transition:background .25s,box-shadow .25s,transform .25s"></i>`).join('')}</div>`;
     addBlobs(d,s.bg||'mint');
     let i=0, score=0; const defEl=d.querySelector('.game-def'), optsEl=d.querySelector('.opts'),
       msgEl=d.querySelector('.gamemsg'), scEl=d.querySelector('.sc'), qnEl=d.querySelector('.qn');
-    function round(){ const r=s.rounds[i]; if(qnEl) qnEl.textContent='Q'+(i+1)+' of '+s.rounds.length; defEl.innerHTML=rt(r.def); optsEl.innerHTML=''; msgEl.textContent='';
-      r.opts.forEach(o=>{ const b=el('div','opt',o); b.addEventListener('click',()=>{
-        if(o===r.ans){ b.classList.add('right'); score++; scEl.textContent=score;
+    /* 2026-08-18 第二轮：进度点（不点也能数到共几题）+ 点错的反馈留到下一次点击才清。 */
+    const pips=[].slice.call(d.querySelectorAll('[data-pip]'));
+    function paint(){ pips.forEach(function(p,k){ var done=k<score, now=(k===i&&i<s.rounds.length);
+      p.style.background=done?'var(--green)':'#DCEBE1';
+      p.style.boxShadow='inset 0 0 0 .25cqh '+((done||now)?'var(--green)':'#BFD9C7');
+      p.style.transform=now?'scale(1.35)':'none'; }); }
+    function clearWrong(){ [].slice.call(optsEl.querySelectorAll('.opt')).forEach(function(x){ x.classList.remove('wrong'); }); }
+    function round(){ const r=s.rounds[i]; if(qnEl) qnEl.textContent='Q'+(i+1)+' of '+s.rounds.length; paint(); defEl.innerHTML=rt(r.def); optsEl.innerHTML=''; msgEl.textContent=''; msgEl.style.color='';
+      r.opts.forEach(o=>{ const b=el('div','opt',o); b.addEventListener('click',()=>{ clearWrong();
+        if(o===r.ans){ b.classList.add('right'); score++; scEl.textContent=score; msgEl.style.color=''; paint();
           if(qnEl && i===s.rounds.length-1) qnEl.textContent='Done';
           msgEl.textContent = i===s.rounds.length-1?'🎉 All done!':'✓ Nice!';
           [...optsEl.children].forEach(x=>x.style.pointerEvents='none');
-          setTimeout(()=>{ i++; if(i<s.rounds.length) round(); }, 750);
-        } else { b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),450); }
+          setTimeout(()=>{ i++; if(i<s.rounds.length){ round(); } else { paint(); } }, 750);
+        } else { b.classList.add('wrong'); msgEl.style.color='var(--red-d)';
+          msgEl.textContent='Not quite — “'+o+'” is not it. Pick another one.'; }
       }); optsEl.appendChild(b); }); }
     round(); return d; };
 
