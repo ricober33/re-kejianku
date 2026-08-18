@@ -160,7 +160,12 @@ mark{background:var(--amber-l);color:var(--orange-d);padding:0 .18em;border-radi
 .revealbox.show{max-height:40cqh;opacity:1;padding-top:1.8cqh;padding-bottom:1.8cqh}
 
 /* ---- 词汇翻卡 ---- */
-.vgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:1.8cqh 1.6cqw;margin-top:2.4cqh;flex:1;min-height:0}
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:1.8cqh 1.6cqw;margin-top:2.4cqh;flex:1;min-height:0;padding-bottom:8cqh}
+/* 2026-08-18 Rico 点头后加的 padding-bottom：`#nav` 是 position:fixed（bottom:2cqh + 高约 4.6cqh），
+   而 .vgrid 是 flex:1 填满高度，底行的下沿永远压在翻页条那条带上 —— 1920×1080 实测第 4 张卡
+   右下角擦进 #nav 4px，`check_clickable.py` 判 FAIL。这条 bug 今天逼出过三次绕路
+   （八张翻卡拆成 4+4、翻牌 4 对补到 6 对、本条）。**射程可静态证明 = 只有一副课件**：
+   `.vgrid` 只在 `R.vocabFlip` 里出现，而全工程只有 `RE Foundation/Unit06/6C.html` 用 vocabFlip。 */
 .flip{perspective:1400px;cursor:pointer}
 .flip .in{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
 .flip.on .in{transform:rotateY(180deg)}
@@ -198,6 +203,16 @@ mark{background:var(--amber-l);color:var(--orange-d);padding:0 .18em;border-radi
 .scorepill{position:absolute;top:5cqh;right:5cqw;z-index:3;background:var(--green);color:#fff;
   font-size:2.1cqh;font-weight:700;padding:.7cqh 1.6cqw;border-radius:999px;box-shadow:var(--shadow)}
 .gamemsg{text-align:center;font-size:2.4cqh;font-weight:700;color:var(--green-d);margin-top:2cqh;min-height:3cqh}
+/* 空的提示条不许占位、更不许压在卡片上：翻牌页底排四张牌下缘约 10% 被它盖住，三视口都点不动
+   （2026-08-14 第五轮 DECK-62）。它有内容时照旧显示，`min-height` 只在有字时才需要。 */
+.gamemsg:empty{min-height:0;margin-top:0;pointer-events:none}
+/* 翻牌页底排的牌下缘会伸到固定翻页条 #nav 底下（实测越界约 6px，三视口都点不动）——
+   给牌阵留出翻页条的高度（2026-08-14 第五轮 DECK-62）。
+   注意：`overlap_check.py` 抓不到这一类，它只比**有文字的**元素，而翻牌背面是空的。 */
+.memgrid{padding-bottom:7cqh;align-content:start;grid-auto-rows:minmax(0,1fr)}
+/* 牌用 `aspect-ratio` 定高，行高不够时会**溢出到行外**（这才是压到翻页条上的真原因，
+   只加 padding 挡不住）。在翻牌页里让牌**填满所在行**、不再按比例撑高。 */
+.memgrid .mcard{aspect-ratio:auto;height:100%;min-height:0}
 
 /* ---- 猜糖游戏 / 揭晓卡 ---- */
 .guessrow{display:flex;gap:2cqw;margin-top:3cqh;justify-content:center}
@@ -473,8 +488,12 @@ window.LESSON = { id:'6B1', title:'The Truth About Great Whites · Words', slide
     {def:'attractive — it makes you want it', ans:'tempting', opts:['victim','tempting','gather','confusion']},
     {def:'the strength or power of something', ans:'force', opts:['flow','force','bite','horror']},
     {def:'not true / not correct', ans:'inaccurate', opts:['inaccurate','frightening','victim','flow']},
-    {def:'to cut or hold with your teeth', ans:'bite', opts:['gather','bite','force','tempting']},
-    {def:'to move along like a liquid', ans:'flow', opts:['flow','confusion','inaccurate','victim']},
+    /* 2026-08-18：这 10 轮原来答案落位 a4 / b4 / c2 / d0 —— 第 4 个位置一次都没当过答案，
+       学生点几轮就学会「不点第四个」（answer_balance R1）。把下面两轮的选项顺序挪一下，
+       改完是 3 / 3 / 2 / 2。题面与答案词一个字没动；游戏页页内自动判分，带课卡不报第几个，
+       所以带课卡不受影响。 */
+    {def:'to cut or hold with your teeth', ans:'bite', opts:['gather','force','tempting','bite']},
+    {def:'to move along like a liquid', ans:'flow', opts:['confusion','inaccurate','victim','flow']},
     {def:'to collect things together', ans:'gather', opts:['bite','horror','gather','force']}]},
 
 /* 20 */ {type:'production', bg:'lemon', timer:'43–48 min',
@@ -533,7 +552,12 @@ window.LESSON = { id:'6B1', title:'The Truth About Great Whites · Words', slide
   function rt(s){ if(s==null) return '';
     return String(s)
       .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
-      .replace(/__(.+?)__/g,'<b>$1</b>')
+      // `__粗体__` 的内容不许含下划线，且前后不许再挨着下划线 —— 否则 `I think ______ because ______.`
+      // 里的填空线会被当成粗体标记吃掉（2026-08-14 独立审查 DECK-15：三副课件 18 处填空线残缺，
+      // 其中包括 F 级唯一验收物「写一句」的三档句框）。全工程实测没有任何一副课件用 `__粗体__`。
+      // 不许用后行断言 `(?<!_)`：那是 ES2018，旧 WebKit（含部分 ClassIn 内置浏览器）解析到就整副白屏
+      // （2026-08-14 终审 DECK-34）。改成把前一个字符捕获出来再放回去，ES5 就能跑。
+      .replace(/(^|[^_])__([^_]+?)__(?!_)/g,'$1<b>$2</b>')
       .replace(/\*(.+?)\*/g,'<i>$1</i>'); }
   function el(tag, cls, html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
 
@@ -953,10 +977,13 @@ window.LESSON = { id:'6B1', title:'The Truth About Great Whites · Words', slide
   R.memory = (s)=>{ const d=el('div','slide '+('bg-'+(s.bg||'rose')));
     let cards=[]; s.pairs.forEach((p,i)=>{ cards.push({k:i,t:p.a,face:'a'}); cards.push({k:i,t:p.b,face:'b'}); });
     cards=cards.map((c,i)=>({...c,i})).sort(()=>Math.random()-0.5);
+    // 2026-08-14 实测：16 张退回 4 列会变成 4 行，反而顶到翻页条上（overlap_check 实测 6094 > 1500）。
+    // 所以**引擎不动**，回到原判据；「末行别只剩一张」改成出题时的约束：
+    // 翻牌页的牌数按 5 列排要么整除、要么余数 ≥2（如 14 张 = 5/5/4）。
     const cols = cards.length<=8?4:(cards.length<=12?4:5);
     d.innerHTML = `<div class="scorepill">🧩 <span class="mp">0</span>/${s.pairs.length}</div>
       ${eyebrow(s.eyebrow||'Memory match · flip two cards')}<h2 style="font-size:4cqh">${rt(s.title||'Find the pairs')}</h2>
-      <div class="grid" style="grid-template-columns:repeat(${cols},1fr);gap:1.4cqh 1.2cqw;margin-top:2cqh;flex:1;min-height:0">
+      <div class="grid memgrid" style="grid-template-columns:repeat(${cols},1fr);gap:1.4cqh 1.2cqw;margin-top:2cqh;flex:1;min-height:0">
         ${cards.map(c=>`<div class="mcard" data-k="${c.k}" data-i="${c.i}" style="position:relative;cursor:pointer;aspect-ratio:1.55">
           <div class="mface mback" style="position:absolute;inset:0;background:var(--purple);border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;font-size:3.4cqh;color:#fff;box-shadow:var(--shadow)">?</div>
           <div class="mface mfront" style="position:absolute;inset:0;background:#fff;border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;text-align:center;padding:.6cqh .8cqw;font-size:1.9cqh;font-weight:700;color:var(--ink);box-shadow:var(--shadow);opacity:0;line-height:1.15">${rt(c.t)}</div></div>`).join('')}
@@ -1013,7 +1040,9 @@ window.LESSON = { id:'6B1', title:'The Truth About Great Whites · Words', slide
       if(c.classList.contains('right')) return;
       if(c.dataset.ok==='1'){ c.classList.add('right'); got++;
         msg.textContent = got>=need ? '✓ All found!' : 'One more…'; }
-      else { c.classList.add('wrong'); msg.textContent='That word can’t follow it — try again';
+      // 默认保持搭配题的原文案（改默认值会把别的单元 8 处真搭配题的提示降级 —— 2026-08-14 DECK-38），
+      // 非搭配类的 pick2 自己传 wrongMsg（2026-08-14 DECK-26）。
+      else { c.classList.add('wrong'); msg.textContent = s.wrongMsg || 'That word can’t follow it — try again';
         setTimeout(()=>c.classList.remove('wrong'),480); }
     }));
     return d; };
