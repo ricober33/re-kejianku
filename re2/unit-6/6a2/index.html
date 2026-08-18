@@ -385,13 +385,16 @@ window.LESSON = { id:'6A2', title:'Cities Beneath the Sea · Cause and Effect', 
   para:'For uncounted generations, trillions upon trillions of coral polyps have lived and died, leaving behind a material called limestone. Prized throughout history, limestone was used to **construct** the Great Pyramids of Egypt, as well as many churches and castles. Yet the greatest limestone structures in the world are built underwater, by the coral polyps themselves. We call them reefs. They can be even larger in scale than the most impressive buildings and structures made by humans.'},
 
 /* 6 */ {type:'quiz', bg:'mint', c:'green', eyebrow:'After A · word check', title:'construct',
-  /* 2026-08-18：本节 14 道单选原来 a4 / b6 / c4，b 超出均匀分布上限（answer_balance R1）。
-     只把这一道的 b、c 两个选项对调、答案随之改成 c —— 题干与三个选项的文字一个字没动，
-     改完是 a4 / b5 / c5。带课卡 p6 那行的答案字母已同步改成 c。 */
-  q:'Your city will **construct** a new bridge. What will happen?', ans:'c', opts:[
+  /* 2026-08-18 撤回：本节 14 道单选是 a4 / b6 / c4，b 比均匀分布多 1.3（answer_balance R1 超标 1 条）。
+     本来把这道的 b、c 对调、答案改成 c 就平了，但那样带课卡上印的答案字母也得跟着改，
+     ClassIn 云盘那 17 份 PDF 就必须重传一次——而我在这台机器上点不到 ClassIn，只能 Rico 手动传。
+     Rico 明确不接受为这件事付出手工，所以这道题原样退回 ans:'b'，
+     线上课件与云盘上那张带课卡保持一致。**这一条超标是知情保留，不是漏掉的。**
+     下次 Unit 6 因为别的原因需要重出 PDF 时，再把它一起平掉。 */
+  q:'Your city will **construct** a new bridge. What will happen?', ans:'b', opts:[
     {k:'a', t:'The old bridge will be taken down and sold.'},
-    {k:'b', t:'People will pay money to cross the bridge.'},
-    {k:'c', t:'A new bridge will be built.'}],
+    {k:'b', t:'A new bridge will be built.'},
+    {k:'c', t:'People will pay money to cross the bridge.'}],
   note:'Construct = **build**. In the text, limestone was used to construct the Pyramids — the Pyramids were built from it.'},
 
 /* 7 */ {type:'quiz', bg:'lilac', c:'purple', eyebrow:'After A · word check', title:'uncounted',
