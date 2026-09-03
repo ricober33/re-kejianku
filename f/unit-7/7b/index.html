@@ -1245,20 +1245,60 @@ window.LESSON = { id:'7B', title:'Seeing the Impossible · Reading B', slides:[
     d.innerHTML = `<div class="scorepill">🧩 <span class="mp">0</span>/${s.pairs.length}</div>
       ${eyebrow(s.eyebrow||'Memory match · flip two cards')}<h2 style="font-size:4cqh">${rt(s.title||'Find the pairs')}</h2>
       <div class="grid memgrid" style="grid-template-columns:repeat(${cols},1fr);gap:1.4cqh 1.2cqw;margin-top:2cqh;flex:1;min-height:0">
-        ${cards.map(c=>`<div class="mcard" data-k="${c.k}" data-i="${c.i}" style="position:relative;cursor:pointer;aspect-ratio:1.55">
+        ${cards.map(c=>`<div class="mcard" data-k="${c.k}" data-i="${c.i}" data-f="${c.face}" style="position:relative;cursor:pointer;aspect-ratio:1.55">
           <div class="mface mback" style="position:absolute;inset:0;background:var(--purple);border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;font-size:3.4cqh;color:#fff;box-shadow:var(--shadow)">?</div>
-          <div class="mface mfront" style="position:absolute;inset:0;background:#fff;border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;text-align:center;padding:.6cqh .8cqw;font-size:1.9cqh;font-weight:700;color:var(--ink);box-shadow:var(--shadow);opacity:0;line-height:1.15">${rt(c.t)}</div></div>`).join('')}
-      </div><div class="gamemsg"></div>`;
+          <div class="mface mfront" style="position:absolute;inset:0;background:#fff;border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;text-align:center;padding:.6cqh .8cqw;font-size:1.9cqh;font-weight:700;color:var(--ink);box-shadow:var(--shadow);opacity:0;line-height:1.15">${rt(c.t)}</div>
+          <div class="mtimer" style="position:absolute;left:10%;right:10%;bottom:.7cqh;height:.5cqh;border-radius:99px;background:var(--red);opacity:0;transform:scaleX(1);transform-origin:left center;z-index:3;pointer-events:none"></div></div>`).join('')}
+      </div><div class="gamemsg"></div>
+      <div class="memfb" style="position:absolute;left:50%;transform:translateX(-50%);bottom:9.5cqh;z-index:4;padding:.7cqh 1.8cqw;border-radius:99px;font-size:2.2cqh;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .15s;pointer-events:none;box-shadow:var(--shadow)"></div>`;
     addBlobs(d,s.bg||'rose');
-    let open=[], matched=0, lock=false;
+    // 2026-09-01 老师上完 8A1 的原话：学生很爱玩，但「翻错的两张扣回去太快，来不及读、也来不及对」。
+    // 原来是一刀切 setTimeout 800ms —— 一个词 + 一句释义 800ms 读不完，这题就退化成「背位置」，
+    // 不是「读词 → 读义 → 判断配不配」。改三处，少一条都不算修好：
+    //  ① 停留时间按两张牌的实际字数算（短词对 ≈3.4s，长释义对 ≈4.5s，封顶 6s），不再是固定值；
+    //  ② 停留期间两张牌打红圈 + 牌底走一条倒计时条 —— 原来是无声消失，学生只知道「没了」，
+    //     不知道「这两个不配」，也不知道还剩多久（倒计时画在牌上，不占版面高度，不动 overlap 判据）；
+    //  ③ 读完点屏幕任意处（或直接点下一张牌）立刻翻回，快的学生不被慢速拖着走。
+    // 配对成功时把「词 = 义」回显出来，让全班把这一对读出来，而不是只看到分数 +1。
+    // 反馈条走 .memfb 这个浮层，**不走 .gamemsg**：.gamemsg 在 memgrid（flex:1）之后，实测
+    // 一有字就压在 #nav 翻页条上（1280/1366/1920 三视口归一化 3297/3307/3303，阈值 1500）。
+    // 原来只有终局那句「🎉 All matched!」走这里、一节课出现一次，所以从没被量到；
+    // 现在每翻错一次都要出字，压着翻页条的提示等于没提示。
+    const READ_MIN=1800, READ_PER_CHAR=60, READ_MAX=6000;
+    const readMs=(a,b)=>Math.min(READ_MAX, READ_MIN+((a||'').length+(b||'').length)*READ_PER_CHAR);
+    const face=x=>x.querySelector('.mfront');
+    const fb=d.querySelector('.memfb');
+    const say=(t,bad)=>{ if(!t){ fb.style.opacity=0; fb.textContent=''; return; }
+      fb.textContent=t; fb.style.color=bad?'var(--red-d)':'var(--green-d)';
+      fb.style.background=bad?'var(--red-l)':'var(--green-l)'; fb.style.opacity=1; };
+    let open=[], matched=0, lock=false, pending=null;
+    const flipBack=()=>{ if(!pending) return; const p=pending; pending=null;
+      clearTimeout(p.t); d.removeEventListener('pointerdown',p.h,true);
+      p.cards.forEach(x=>{ const f=face(x), tm=x.querySelector('.mtimer');
+        f.style.opacity=0; f.style.boxShadow='var(--shadow)'; x.querySelector('.mback').style.opacity=1;
+        tm.style.transition='none'; tm.style.opacity=0; tm.style.transform='scaleX(1)'; x.classList.remove('up'); });
+      say(''); open=[]; lock=false; };
     d.querySelectorAll('.mcard').forEach(c=>c.addEventListener('click',()=>{
       if(lock||c.dataset.done||c.classList.contains('up'))return;
-      c.querySelector('.mfront').style.opacity=1; c.querySelector('.mback').style.opacity=0; c.classList.add('up'); open.push(c);
-      if(open.length===2){ lock=true;
-        if(open[0].dataset.k===open[1].dataset.k){ open.forEach(x=>{x.dataset.done=1;x.style.pointerEvents='none';x.querySelector('.mfront').style.background='var(--green-l)';});
+      face(c).style.opacity=1; c.querySelector('.mback').style.opacity=0; c.classList.add('up'); open.push(c);
+      if(open.length===2){ lock=true; const pair=open.slice();
+        if(pair[0].dataset.k===pair[1].dataset.k){ pair.forEach(x=>{x.dataset.done=1;x.style.pointerEvents='none';face(x).style.background='var(--green-l)';});
           matched++; d.querySelector('.mp').textContent=matched; open=[]; lock=false;
-          if(matched===s.pairs.length) d.querySelector('.gamemsg').textContent='🎉 All matched!';
-        } else { setTimeout(()=>{ open.forEach(x=>{x.querySelector('.mfront').style.opacity=0;x.querySelector('.mback').style.opacity=1;x.classList.remove('up');}); open=[]; lock=false; },800); }
+          const A=pair.find(x=>x.dataset.f==='a')||pair[0], B=pair.find(x=>x.dataset.f==='b')||pair[1];
+          say(matched===s.pairs.length ? '🎉 All matched!' : `✓ ${face(A).textContent} = ${face(B).textContent}`, false);
+        } else {
+          const ms=readMs(face(pair[0]).textContent, face(pair[1]).textContent);
+          pair.forEach(x=>{ face(x).style.boxShadow='0 0 0 .4cqh var(--red), var(--shadow)';
+            const tm=x.querySelector('.mtimer');
+            // 先归位再强制回流（读 offsetWidth），倒计时条才会真的走完 ms —— 用 rAF 在后台标签页里
+            // 会被浏览器暂停，条不动而牌照样翻回去，等于又变回「猝不及防」。
+            tm.style.transition='none'; tm.style.transform='scaleX(1)'; tm.style.opacity=1; void tm.offsetWidth;
+            tm.style.transition=`transform ${ms}ms linear`; tm.style.transform='scaleX(0)'; });
+          say('✗ Not a pair — read both, then tap anywhere', true);
+          const h=()=>flipBack();
+          pending={cards:pair, h, t:setTimeout(flipBack, ms)};
+          d.addEventListener('pointerdown',h,true);
+        }
       } }));
     return d; };
 
