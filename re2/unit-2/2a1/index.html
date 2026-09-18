@@ -160,7 +160,12 @@ mark{background:var(--amber-l);color:var(--orange-d);padding:0 .18em;border-radi
 .revealbox.show{max-height:40cqh;opacity:1;padding-top:1.8cqh;padding-bottom:1.8cqh}
 
 /* ---- 词汇翻卡 ---- */
-.vgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:1.8cqh 1.6cqw;margin-top:2.4cqh;flex:1;min-height:0}
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:1.8cqh 1.6cqw;margin-top:2.4cqh;flex:1;min-height:0;padding-bottom:8cqh}
+/* 2026-08-18 Rico 点头后加的 padding-bottom：`#nav` 是 position:fixed（bottom:2cqh + 高约 4.6cqh），
+   而 .vgrid 是 flex:1 填满高度，底行的下沿永远压在翻页条那条带上 —— 1920×1080 实测第 4 张卡
+   右下角擦进 #nav 4px，`check_clickable.py` 判 FAIL。这条 bug 今天逼出过三次绕路
+   （八张翻卡拆成 4+4、翻牌 4 对补到 6 对、本条）。**射程可静态证明 = 只有一副课件**：
+   `.vgrid` 只在 `R.vocabFlip` 里出现，而全工程只有 `REF/Unit06/6C.html` 用 vocabFlip。 */
 .flip{perspective:1400px;cursor:pointer}
 .flip .in{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
 .flip.on .in{transform:rotateY(180deg)}
@@ -198,6 +203,16 @@ mark{background:var(--amber-l);color:var(--orange-d);padding:0 .18em;border-radi
 .scorepill{position:absolute;top:5cqh;right:5cqw;z-index:3;background:var(--green);color:#fff;
   font-size:2.1cqh;font-weight:700;padding:.7cqh 1.6cqw;border-radius:999px;box-shadow:var(--shadow)}
 .gamemsg{text-align:center;font-size:2.4cqh;font-weight:700;color:var(--green-d);margin-top:2cqh;min-height:3cqh}
+/* 空的提示条不许占位、更不许压在卡片上：翻牌页底排四张牌下缘约 10% 被它盖住，三视口都点不动
+   （2026-08-14 第五轮 DECK-62）。它有内容时照旧显示，`min-height` 只在有字时才需要。 */
+.gamemsg:empty{min-height:0;margin-top:0;pointer-events:none}
+/* 翻牌页底排的牌下缘会伸到固定翻页条 #nav 底下（实测越界约 6px，三视口都点不动）——
+   给牌阵留出翻页条的高度（2026-08-14 第五轮 DECK-62）。
+   注意：`overlap_check.py` 抓不到这一类，它只比**有文字的**元素，而翻牌背面是空的。 */
+.memgrid{padding-bottom:7cqh;align-content:start;grid-auto-rows:minmax(0,1fr)}
+/* 牌用 `aspect-ratio` 定高，行高不够时会**溢出到行外**（这才是压到翻页条上的真原因，
+   只加 padding 挡不住）。在翻牌页里让牌**填满所在行**、不再按比例撑高。 */
+.memgrid .mcard{aspect-ratio:auto;height:100%;min-height:0}
 
 /* ---- 猜糖游戏 / 揭晓卡 ---- */
 .guessrow{display:flex;gap:2cqw;margin-top:3cqh;justify-content:center}
@@ -316,12 +331,12 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
 /* 1 */ {type:'hero', bg:'sky', img:'hero_whale.jpg',
   eyebrow:'📖 Unit 2 · Call of the Wild',
   title:'Song of the Humpback', sub:'Reading A · Lesson 1',
-  body:'Today we build the **words**. Next lesson, these words make the reading easy — and you meet a whale that sings for 30 minutes. 🐋'},
+  body:'Today: the unit **video**, then the **words**. Next lesson, these words make the reading easy — and you meet a whale that sings for 30 minutes. 🐋'},
 
 /* 2 */ {type:'journey', bg:'mint', timer:'0–2 min',
   eyebrow:'🗺️ Your unit journey', title:'Where we are in Unit 2',
   steps:[
-    {n:'TODAY', e:'🔤', t:'Words for Reading A', state:'now'},
+    {n:'TODAY', e:'🎬', t:'Video + words for Reading A', state:'now'},
     {n:'next', e:'📖', t:'Read: the whale song'},
     {n:'later', e:'🐦', t:'Reading B: bird song'},
     {n:'end', e:'🔎', t:'Scanning'}],
@@ -357,31 +372,69 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
       opts:['by touching flippers','by changing colour','by making sounds'], ans:'by making sounds'}],
   discuss:{t:'Guess first', s:'Type your three guesses, then we reveal. You\'ll meet all three again in the reading.', starter:'I think they swim…'}},
 
-/* 6 */ {type:'vocabIntro', bg:'peach', timer:'14–15 min',
+/* 6 */ {type:'videoBefore', bg:'sky', timer:'14–18 min',
+  eyebrow:'🎬 Before you watch · three words from the video',
+  title:'Which meaning is right?',
+  body:'These three come out of the unit video you are about to watch. Tap the meaning you think is right — the card turns green if you are correct.',
+  qs:[
+    {q:'**thunder** —', opts:[
+      {t:'the loud sound you hear after lightning', ok:1},
+      {t:'a very strong wind', ok:0}]},
+    {q:'**dominant** —', opts:[
+      {t:'friendly to everyone in the group', ok:0},
+      {t:'more important or powerful than the others', ok:1}]},
+    {q:'a **territory** —', opts:[
+      {t:'an area of land belonging to a particular group', ok:1},
+      {t:'the sound an animal makes at night', ok:0}]}]},
+
+/* 7 */ {type:'content', bg:'lilac', timer:'18–20 min',
+  eyebrow:'🤔 Before you watch · predict', title:'How far away can you hear a lion?',
+  body:'The whale in our reading sings for half an hour and is heard across an ocean. The video is about **another animal that is heard a very long way off** — a lion.<br><br>**Predict:** how far does a lion\'s roar carry?',
+  chips:[
+    {t:'🔊 about 1 km', cl:'var(--amber-l)', c:'var(--amber-d)'},
+    {t:'📢 about 8 km', cl:'var(--purple-l)', c:'var(--purple-d)'},
+    {t:'🌍 across a whole country', cl:'var(--teal-l)', c:'var(--teal-d)'}],
+  discuss:{t:'Your prediction', s:'Type your guess + one reason. The video gives the number.', starter:'I think a roar carries about…'}},
+
+/* 8 */ {type:'video', bg:'dark', timer:'20–25 min',
+  eyebrow:'🎥 Watch', title:'The Lion\'s Roar',
+  src:'TheLionsRoar.mp4',
+  recall:'Watch for **three** things: **1)** how far a roar carries, **2)** two reasons lions roar, **3)** the name for a lion family group.'},
+
+/* 9 */ {type:'content', bg:'mint', timer:'25–28 min',
+  eyebrow:'💬 After the video · say it back', title:'What did you see?',
+  body:'**1)** How far can a roar be heard?<br>**2)** Give **two** reasons a lion roars.<br>**3)** The whale sings and the lion roars. **Are they doing the same thing?**',
+  chips:[
+    {t:'📣 up to 8 km away', cl:'var(--amber-l)', c:'var(--amber-d)'},
+    {t:'🚫 stay out of my territory', cl:'var(--teal-l)', c:'var(--teal-d)'},
+    {t:'👨‍👩‍👧 here I am, family', cl:'var(--purple-l)', c:'var(--purple-d)'}],
+  discuss:{t:'One line each', s:'Everyone types ONE sentence. Use your own words, not the video\'s.', starter:'In the video I saw…'}},
+
+/* 10 */ {type:'vocabIntro', bg:'peach', timer:'28–29 min',
   eyebrow:'🔤 Vocabulary', title:'Meet the words for "Song of the Humpback"',
   body:'Ten words. **Six** we\'ll know well (with photos), **four** more to recognise. You\'ll **USE** these next lesson to read about whales that sing.',
   words:['record','interact','aware','complex','curiously','season','apparently','experience','single','unknown']},
 
-/* 7  */ {type:'spotlight', timer:'15–27 min', bg:'sky', c:'blue', n:'1 / 6', w:'record', ipa:'/rɪˈkɔːd/', pos:'v.', img:'w_record.jpg',
+/* 11 */ {type:'spotlight', timer:'29–41 min', bg:'sky', c:'blue', n:'1 / 6', w:'record', ipa:'/rɪˈkɔːd/', pos:'v.', img:'w_record.jpg',
   def:'to store sound or pictures so you can hear or see them again later', ccq:'Can you listen to it again tomorrow? (Yes)',
   ex:'Up in the boat, Darling recorded the whale\'s song.'},
-/* 8  */ {type:'spotlight', bg:'mint', c:'teal', n:'2 / 6', w:'interact', ipa:'/ˌɪntərˈækt/', pos:'v.', img:'w_interact.jpg',
+/* 12 */ {type:'spotlight', bg:'mint', c:'teal', n:'2 / 6', w:'interact', ipa:'/ˌɪntərˈækt/', pos:'v.', img:'w_interact.jpg',
   def:'to talk to or do things with someone', ccq:'Can one person interact alone? (No)',
   ex:'He recalls a special moment while interacting with a humpback.'},
-/* 9  */ {type:'spotlight', bg:'lemon', c:'amber', n:'3 / 6', w:'aware', ipa:'/əˈweə/', pos:'adj.', img:'w_aware.jpg',
+/* 13 */ {type:'spotlight', bg:'lemon', c:'amber', n:'3 / 6', w:'aware', ipa:'/əˈweə/', pos:'adj.', img:'w_aware.jpg',
   def:'knowing that something or someone is there', ccq:'If I am aware of you, do I know you are here? (Yes)',
   ex:'Chadwick could see that the whale was aware of him.'},
-/* 10 */ {type:'spotlight', bg:'lilac', c:'purple', n:'4 / 6', w:'complex', ipa:'/ˈkɒmpleks/', pos:'adj.', img:'w_complex.jpg',
+/* 14 */ {type:'spotlight', bg:'lilac', c:'purple', n:'4 / 6', w:'complex', ipa:'/ˈkɒmpleks/', pos:'adj.', img:'w_complex.jpg',
   def:'made of many parts, so not simple', ccq:'Is it easy to describe in three words? (No)',
   ex:'Humpback whale songs can be long and complex.'},
-/* 11 */ {type:'spotlight', bg:'rose', c:'pink', n:'5 / 6', w:'curiously', ipa:'/ˈkjʊəriəsli/', pos:'adv.', img:'w_curiously.jpg',
+/* 15 */ {type:'spotlight', bg:'rose', c:'pink', n:'5 / 6', w:'curiously', ipa:'/ˈkjʊəriəsli/', pos:'adv.', img:'w_curiously.jpg',
   def:'in a way that shows you want to find out more', ccq:'Does the whale want to know about him? (Yes)',
   ex:'The giant looked him over curiously, but never harmed him.'},
-/* 12 */ {type:'spotlight', bg:'peach', c:'green', n:'6 / 6', w:'season', ipa:'/ˈsiːzn/', pos:'n.', img:'w_season.jpg',
+/* 16 */ {type:'spotlight', bg:'peach', c:'green', n:'6 / 6', w:'season', ipa:'/ˈsiːzn/', pos:'n.', img:'w_season.jpg',
   def:'a part of the year — or the time of year when something happens', ccq:'Does it come back every year? (Yes)',
   ex:'Songs can change over a single breeding season.'},
 
-/* 13 */ {type:'game', timer:'27–30 min', bg:'mint', eyebrow:'⚡ Game · retrieve the 6', title:'Which word matches?',
+/* 17 */ {type:'game', timer:'41–44 min', bg:'mint', eyebrow:'⚡ Game · retrieve the 6', title:'Which word matches?',
   rounds:[
     {def:'to store sound so you can hear it later', ans:'record', opts:['record','season','aware','complex']},
     {def:'to talk to or do things with someone', ans:'interact', opts:['complex','interact','record','curiously']},
@@ -390,7 +443,7 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
     {def:'in a way that shows you want to find out more', ans:'curiously', opts:['curiously','complex','record','season']},
     {def:'a part of the year', ans:'season', opts:['record','season','aware','interact']}]},
 
-/* 14 */ {type:'quickset', bg:'lilac', timer:'30–33 min',
+/* 18 */ {type:'quickset', bg:'lilac', timer:'44–47 min',
   eyebrow:'🔤 Four more words to recognise', title:'Four more words',
   words:[
     {w:'apparently', pos:'adv.', def:'it seems to be true, from what we can see — "**Apparently**, the whale wanted to look at him too."'},
@@ -398,14 +451,14 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
     {w:'single', pos:'adj.', def:'only one — "The song can change over a **single** breeding season."'},
     {w:'unknown', pos:'adj.', def:'not known — "Only males sing, but for **unknown** reasons."'}]},
 
-/* 15 */ {type:'game', timer:'33–35 min', bg:'mint', eyebrow:'⚡ Game · the 4 new words', title:'Choose the word',
+/* 19 */ {type:'game', timer:'47–49 min', bg:'mint', eyebrow:'⚡ Game · the 4 new words', title:'Choose the word',
   rounds:[
     {def:'to have something happen to you', ans:'experience', opts:['single','unknown','experience','apparently']},
     {def:'not known', ans:'unknown', opts:['apparently','experience','single','unknown']},
     {def:'it seems to be true, from what we can see', ans:'apparently', opts:['apparently','single','unknown','experience']},
     {def:'only one', ans:'single', opts:['unknown','single','apparently','experience']}]},
 
-/* 16 */ {type:'match', bg:'sky', timer:'35–38 min', eyebrow:'🧩 Practice · match',
+/* 20 */ {type:'match', bg:'sky', timer:'49–52 min', eyebrow:'🧩 Practice · match',
   title:'Match the word to its meaning',
   pairs:[
     {w:'record', m:'to store sound to hear it again later'},
@@ -413,13 +466,13 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
     {w:'complex', m:'made of many parts, not simple'},
     {w:'interact', m:'to talk to or do things with someone'}]},
 
-/* 17 */ {type:'gapfill', bg:'lemon', timer:'38–42 min', eyebrow:'✍️ Practice · use the words',
+/* 21 */ {type:'gapfill', bg:'lemon', timer:'52–56 min', eyebrow:'✍️ Practice · use the words',
   title:'Tap a word, then tap the gap',
   text:'1. The scientist {0} the whale\'s song from the boat.  \n2. The whale was {1} of the diver, but swam on calmly.  \n3. A humpback song is long and {2}.  \n4. Nicklin had a special moment {3} with a humpback.',
   words:['recorded','aware','complex','interacting'],
   answers:{0:'recorded',1:'aware',2:'complex',3:'interacting'}},
 
-/* 18 */ {type:'content', bg:'lilac', timer:'42–45 min',
+/* 22 */ {type:'content', bg:'lilac', timer:'56–59 min',
   eyebrow:'🔗 Words travel in chunks', title:'Say the whole chunk, not just the word',
   body:'Good learners remember words **with their partners**. Tap and say each chunk aloud:',
   chips:[
@@ -430,13 +483,13 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
     {t:'the rainy <b>season</b>', cl:'var(--green-l)', c:'var(--green-d)'}],
   discuss:{t:'Your turn', s:'Type one chunk in a sentence about your life.', starter:'I am aware of…'}},
 
-/* 19 */ {type:'production', bg:'mint', timer:'45–49 min',
+/* 23 */ {type:'production', bg:'mint', timer:'59–63 min',
   eyebrow:'✍️ Production · write', title:'Use the words for real',
   body:'Write **ONE true sentence** about **your** life, using **TWO** of today\'s words (e.g. record, interact, aware, season).',
   model:'I record my English homework on my phone so I can hear my mistakes.',
   discuss:{t:'Share it', s:'Type your sentence in the chat — I\'ll read two aloud.', starter:'I record… / I am aware that…'}},
 
-/* 20 */ {type:'poll', bg:'rose', timer:'49–52 min',
+/* 24 */ {type:'poll', bg:'rose', timer:'63–66 min',
   eyebrow:'🔮 Before you read · predict', title:'Only <span class="hl-p">male</span> humpbacks sing. Why?',
   body:'You know the words now. Vote for the idea you believe, and give **one** reason. Next lesson you\'ll read what scientists actually found.',
   options:[
@@ -445,7 +498,7 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
     {e:'❓', t:'Nobody knows yet', c:'amber'}],
   discuss:{t:'Why?', s:'Type your choice + one reason. We check it after the reading.', starter:'I think males sing because…'}},
 
-/* 21 */ {type:'game', timer:'52–56 min', bg:'mint', eyebrow:'🏁 Beat the clock · all 10', title:'Final retrieval sprint',
+/* 25 */ {type:'game', timer:'66–70 min', bg:'mint', eyebrow:'🏁 Beat the clock · all 10', title:'Final retrieval sprint',
   rounds:[
     {def:'knowing that something is there', ans:'aware', opts:['aware','record','single','unknown']},
     {def:'a part of the year', ans:'season', opts:['complex','season','interact','apparently']},
@@ -458,14 +511,14 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
     {def:'only one', ans:'single', opts:['interact','complex','single','record']},
     {def:'it seems to be true, from what we can see', ans:'apparently', opts:['unknown','apparently','aware','season']}]},
 
-/* 22 */ {type:'content', bg:'peach', timer:'56–58 min',
+/* 26 */ {type:'content', bg:'peach', timer:'70–72 min',
   eyebrow:'📖 Before you read', title:'Next lesson: you\'ll read "Song of the Humpback"',
   body:'You built the **words**. Next lesson you **read** with them, and learn a new skill: working out **who "it" and "he" mean** in a sentence. Watch for: *record · aware · curiously · complex · unknown · single*.',
   chips:[
     {t:'🐋 a 13-metre whale looks him over', cl:'var(--teal-l)', c:'var(--teal-d)'},
     {t:'🔗 who does "it" mean?', cl:'var(--orange-l)', c:'var(--orange-d)'}]},
 
-/* 23 */ {type:'exit', bg:'mint', timer:'58–60 min',
+/* 27 */ {type:'exit', bg:'mint', timer:'72–74 min',
   eyebrow:'🎒 Before you go', title:'Nice work today! 🎉',
   recap:[
     {n:'6', t:'words you can USE'},
@@ -495,7 +548,12 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
   function rt(s){ if(s==null) return '';
     return String(s)
       .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
-      .replace(/__(.+?)__/g,'<b>$1</b>')
+      // `__粗体__` 的内容不许含下划线，且前后不许再挨着下划线 —— 否则 `I think ______ because ______.`
+      // 里的填空线会被当成粗体标记吃掉（2026-08-14 独立审查 DECK-15：三副课件 18 处填空线残缺，
+      // 其中包括 F 级唯一验收物「写一句」的三档句框）。全工程实测没有任何一副课件用 `__粗体__`。
+      // 不许用后行断言 `(?<!_)`：那是 ES2018，旧 WebKit（含部分 ClassIn 内置浏览器）解析到就整副白屏
+      // （2026-08-14 终审 DECK-34）。改成把前一个字符捕获出来再放回去，ES5 就能跑。
+      .replace(/(^|[^_])__([^_]+?)__(?!_)/g,'$1<b>$2</b>')
       .replace(/\*(.+?)\*/g,'<i>$1</i>'); }
   function el(tag, cls, html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
 
@@ -657,7 +715,12 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
           ${rt(s.def)}${s.ccq?`<div style="font-size:2cqh;margin-top:1cqh;color:var(--teal-d)">💡 ${rt(s.ccq)}</div>`:''}</div>
         <div class="big" style="font-size:2.6cqh;color:var(--ink-soft);font-style:italic;margin-top:2cqh">"${rt(s.ex)}"</div>
       </div>
-      <div class="pic"><img src="${imgsrc(s.img)}" alt=""></div>`;
+      ${/* 2026-09-10：词卡也认 `fit:'contain'`，写法与 R.reading（本文件第 294 行）逐字相同，
+            样式复用 kai.css `.reading .pic.contain img`。不写就照旧 cover，全线其余词卡一张不动。
+            起因：1A1 p14 的 `w_method.jpg` 是一张折纸分步图，左右各被裁掉 15.1%，
+            屏幕上 `step 5 completed` 只剩 `ompleted`、`step 8 done - note curve` 只剩 `one - urve`、
+            右边的 `done!` 整个不见 —— 而那些步骤字正是这张图之所以能表示 method 的原因。 */''}
+      <div class="pic${s.fit==='contain'?' contain':''}"><img src="${imgsrc(s.img)}" alt=""></div>`;
     addBlobs(d,s.bg||'peach');
     const btn=d.querySelector('.revealbtn'); btn.addEventListener('click',()=>d.querySelector('.revealbox').classList.toggle('show'));
     return d; };
@@ -752,10 +815,18 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
       cnt.textContent='✋ voted!'; }));
     return d; };
 
+  // 2026-08-24：`discuss` 补进来。全 29 个渲染器里有 7 个调 `discuss(s.discuss)`，**唯独 reading 漏了**，
+  // 于是写在 reading 页上的课前讨论题（题目 + 起句支架）学生一个字都看不到 —— 第十五把尺子
+  // `renderer_field_check` 判的「死字段」，跟 §36 那条 `wrongMsg` 同族：不是数据脏，是数据到不了 DOM。
+  // **射程是扫出来的**：全工程 131 副在用课件、366 张 reading 页，带 `discuss` 的只有 3 张
+  //（REF 3B p3「Two questions before we read」· 4A p3 与 4B p3「Before we start」），**都未上线**；
+  // 其余 363 张没有这个字段，`discuss()` 第一行 `if(!d) return ''`，渲染结果一字不变。
+  // 放在正文之后、图片之前：与 spotlight/comp 等页的位置一致（讨论条一律贴在该页主体内容下方）。
   R.reading = (s)=>{ const d=el('div','slide reading '+('bg-'+(s.bg||'peach')));
     d.innerHTML = `${timerPill(s.timer)}<div class="txt"><div class="parabadge" style="--c:var(--${s.c||'teal'})">📖 ${rt(s.tag||'Paragraph')}</div>
         <div class="para">${rt(s.para)}</div>
-        ${s.q?`<button class="revealbtn">${rt(s.qlabel||'What is the main idea?')}</button><div class="revealbox">${rt(s.q)}</div>`:''}</div>
+        ${s.q?`<button class="revealbtn">${rt(s.qlabel||'What is the main idea?')}</button><div class="revealbox">${rt(s.q)}</div>`:''}
+        ${discuss(s.discuss)}</div>
       ${s.img?`<div class="pic${s.fit==='contain'?' contain':''}"><img src="${imgsrc(s.img)}" alt=""></div>`:''}`;
     addBlobs(d,s.bg||'peach');
     const btn=d.querySelector('.revealbtn'); if(btn) btn.addEventListener('click',()=>d.querySelector('.revealbox').classList.toggle('show'));
@@ -771,7 +842,7 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
             <div class="catlabel" style="--c:var(--${cs[i%cs.length]}-d)">${rt(q.cat)}</div></div>
           <div class="big" style="font-size:2.6cqh;line-height:1.2">${rt(q.q)}</div>
           ${q.opts?`<div class="copts" data-ans="${String(q.ans).replace(/"/g,'&quot;')}">${q.opts.map(o=>`<button class="copt">${rt(o)}</button>`).join('')}</div>`:''}
-          <div class="hintbox" style="--cl:var(--${cs[i%cs.length]}-l);--c:var(--${cs[i%cs.length]}-d)">💡 ${rt(q.hint)}</div>
+          <div class="hintbox" style="--cl:var(--${cs[i%cs.length]}-l);--c:var(--${cs[i%cs.length]}-d)"><span>💡 ${rt(q.hint)}</span></div>
         </div>`).join('')}</div>
       <div class="row" style="margin-top:2cqh;gap:2cqw;align-items:center">
         <button class="revealbtn" style="margin-top:0">Reveal answers ✓</button>
@@ -818,7 +889,7 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
           <div style="flex:1;font-size:2.4cqh;color:var(--ink-soft);font-style:italic">${rt(r.starter)}</div>
         </div>`).join('')}
       </div>
-      <div class="hintbox" style="margin-top:1.8cqh;max-width:74cqw;--cl:var(--green-l);--c:var(--green-d)">✍️ ${rt(s.tip||'Put your 3 lines together — that is your first paragraph! Type it in the chat.')}</div>
+      <div class="hintbox" style="margin-top:1.8cqh;max-width:74cqw;--cl:var(--green-l);--c:var(--green-d)"><span>✍️ ${rt(s.tip||'Put your 3 lines together — that is your first paragraph! Type it in the chat.')}</span></div>
       ${discuss(s.discuss)}`;
     addBlobs(d,s.bg||'lilac'); return d; };
 
@@ -915,24 +986,78 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
   R.memory = (s)=>{ const d=el('div','slide '+('bg-'+(s.bg||'rose')));
     let cards=[]; s.pairs.forEach((p,i)=>{ cards.push({k:i,t:p.a,face:'a'}); cards.push({k:i,t:p.b,face:'b'}); });
     cards=cards.map((c,i)=>({...c,i})).sort(()=>Math.random()-0.5);
-    const cols = cards.length<=8?4:(cards.length<=12?4:5);
+    // 2026-08-14 实测：16 张退回 4 列会变成 4 行，反而顶到翻页条上（overlap_check 实测 6094 > 1500）。
+    // 所以**引擎不动**，回到原判据；「末行别只剩一张」改成出题时的约束：
+    // 翻牌页的牌数按 5 列排要么整除、要么余数 ≥2（如 14 张 = 5/5/4）。
+    // 2026-09-10：≤6 张排 3 列（3+3），不再按 4 列排成 4+2 —— 后者右下角空一大块，
+    // 而且行高被拉高。全工程只有 RE1 7B1 p26 是 6 张，其余 33 副全是 12 张，这一格不影响它们。
+    const cols = cards.length<=6?3:(cards.length<=8?4:(cards.length<=12?4:5));
     d.innerHTML = `<div class="scorepill">🧩 <span class="mp">0</span>/${s.pairs.length}</div>
       ${eyebrow(s.eyebrow||'Memory match · flip two cards')}<h2 style="font-size:4cqh">${rt(s.title||'Find the pairs')}</h2>
-      <div class="grid" style="grid-template-columns:repeat(${cols},1fr);gap:1.4cqh 1.2cqw;margin-top:2cqh;flex:1;min-height:0">
-        ${cards.map(c=>`<div class="mcard" data-k="${c.k}" data-i="${c.i}" style="position:relative;cursor:pointer;aspect-ratio:1.55">
+      <div class="grid memgrid" style="grid-template-columns:repeat(${cols},1fr);gap:1.4cqh 1.2cqw;margin-top:2cqh;flex:1;min-height:0">
+        ${/* 2026-09-10（RE1 全线体检）：**牌不许再用行内 `aspect-ratio` 定形。**
+              病历：7B1 p26 只有 6 张牌 → 4 列 2 行 → 行高被拉到 242px →
+              牌宽 = 242 × 1.55 = 375px，而每一格只有 265px，牌**溢出到格子外面**，
+              第 4 张整张跑到屏幕右边看不见也点不到（1280 / 1366 / 1920 三个宽度都是）。
+              `kai.css` 第 210 行 `.memgrid .mcard{aspect-ratio:auto;height:100%}` 本来就是
+              为了关掉它，但**行内样式压过样式表**，那条规则一天都没生效过。
+              牌数 12 的页（全工程其余 33 副全是 12 张）行高只有 1/3，牌宽没到格宽，
+              所以一直没被发现 —— 这不是「12 张没问题」，是「12 张恰好没撞上」。
+              去掉行内这一条之后，形由 `kai.css` 那行说了算：填满格子、不再按比例撑宽。 */''}
+        ${cards.map(c=>`<div class="mcard" data-k="${c.k}" data-i="${c.i}" data-f="${c.face}" style="position:relative;cursor:pointer">
           <div class="mface mback" style="position:absolute;inset:0;background:var(--purple);border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;font-size:3.4cqh;color:#fff;box-shadow:var(--shadow)">?</div>
-          <div class="mface mfront" style="position:absolute;inset:0;background:#fff;border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;text-align:center;padding:.6cqh .8cqw;font-size:1.9cqh;font-weight:700;color:var(--ink);box-shadow:var(--shadow);opacity:0;line-height:1.15">${rt(c.t)}</div></div>`).join('')}
-      </div><div class="gamemsg"></div>`;
+          <div class="mface mfront" style="position:absolute;inset:0;background:#fff;border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;text-align:center;padding:.6cqh .8cqw;font-size:1.9cqh;font-weight:700;color:var(--ink);box-shadow:var(--shadow);opacity:0;line-height:1.15">${rt(c.t)}</div>
+          <div class="mtimer" style="position:absolute;left:10%;right:10%;bottom:.7cqh;height:.5cqh;border-radius:99px;background:var(--red);opacity:0;transform:scaleX(1);transform-origin:left center;z-index:3;pointer-events:none"></div></div>`).join('')}
+      </div><div class="gamemsg"></div>
+      <div class="memfb" style="position:absolute;left:50%;transform:translateX(-50%);bottom:9.5cqh;z-index:4;padding:.7cqh 1.8cqw;border-radius:99px;font-size:2.2cqh;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .15s;pointer-events:none;box-shadow:var(--shadow)"></div>`;
     addBlobs(d,s.bg||'rose');
-    let open=[], matched=0, lock=false;
+    // 2026-09-01 老师上完 8A1 的原话：学生很爱玩，但「翻错的两张扣回去太快，来不及读、也来不及对」。
+    // 原来是一刀切 setTimeout 800ms —— 一个词 + 一句释义 800ms 读不完，这题就退化成「背位置」，
+    // 不是「读词 → 读义 → 判断配不配」。改三处，少一条都不算修好：
+    //  ① 停留时间按两张牌的实际字数算（短词对 ≈3.4s，长释义对 ≈4.5s，封顶 6s），不再是固定值；
+    //  ② 停留期间两张牌打红圈 + 牌底走一条倒计时条 —— 原来是无声消失，学生只知道「没了」，
+    //     不知道「这两个不配」，也不知道还剩多久（倒计时画在牌上，不占版面高度，不动 overlap 判据）；
+    //  ③ 读完点屏幕任意处（或直接点下一张牌）立刻翻回，快的学生不被慢速拖着走。
+    // 配对成功时把「词 = 义」回显出来，让全班把这一对读出来，而不是只看到分数 +1。
+    // 反馈条走 .memfb 这个浮层，**不走 .gamemsg**：.gamemsg 在 memgrid（flex:1）之后，实测
+    // 一有字就压在 #nav 翻页条上（1280/1366/1920 三视口归一化 3297/3307/3303，阈值 1500）。
+    // 原来只有终局那句「🎉 All matched!」走这里、一节课出现一次，所以从没被量到；
+    // 现在每翻错一次都要出字，压着翻页条的提示等于没提示。
+    const READ_MIN=1800, READ_PER_CHAR=60, READ_MAX=6000;
+    const readMs=(a,b)=>Math.min(READ_MAX, READ_MIN+((a||'').length+(b||'').length)*READ_PER_CHAR);
+    const face=x=>x.querySelector('.mfront');
+    const fb=d.querySelector('.memfb');
+    const say=(t,bad)=>{ if(!t){ fb.style.opacity=0; fb.textContent=''; return; }
+      fb.textContent=t; fb.style.color=bad?'var(--red-d)':'var(--green-d)';
+      fb.style.background=bad?'var(--red-l)':'var(--green-l)'; fb.style.opacity=1; };
+    let open=[], matched=0, lock=false, pending=null;
+    const flipBack=()=>{ if(!pending) return; const p=pending; pending=null;
+      clearTimeout(p.t); d.removeEventListener('pointerdown',p.h,true);
+      p.cards.forEach(x=>{ const f=face(x), tm=x.querySelector('.mtimer');
+        f.style.opacity=0; f.style.boxShadow='var(--shadow)'; x.querySelector('.mback').style.opacity=1;
+        tm.style.transition='none'; tm.style.opacity=0; tm.style.transform='scaleX(1)'; x.classList.remove('up'); });
+      say(''); open=[]; lock=false; };
     d.querySelectorAll('.mcard').forEach(c=>c.addEventListener('click',()=>{
       if(lock||c.dataset.done||c.classList.contains('up'))return;
-      c.querySelector('.mfront').style.opacity=1; c.querySelector('.mback').style.opacity=0; c.classList.add('up'); open.push(c);
-      if(open.length===2){ lock=true;
-        if(open[0].dataset.k===open[1].dataset.k){ open.forEach(x=>{x.dataset.done=1;x.style.pointerEvents='none';x.querySelector('.mfront').style.background='var(--green-l)';});
+      face(c).style.opacity=1; c.querySelector('.mback').style.opacity=0; c.classList.add('up'); open.push(c);
+      if(open.length===2){ lock=true; const pair=open.slice();
+        if(pair[0].dataset.k===pair[1].dataset.k){ pair.forEach(x=>{x.dataset.done=1;x.style.pointerEvents='none';face(x).style.background='var(--green-l)';});
           matched++; d.querySelector('.mp').textContent=matched; open=[]; lock=false;
-          if(matched===s.pairs.length) d.querySelector('.gamemsg').textContent='🎉 All matched!';
-        } else { setTimeout(()=>{ open.forEach(x=>{x.querySelector('.mfront').style.opacity=0;x.querySelector('.mback').style.opacity=1;x.classList.remove('up');}); open=[]; lock=false; },800); }
+          const A=pair.find(x=>x.dataset.f==='a')||pair[0], B=pair.find(x=>x.dataset.f==='b')||pair[1];
+          say(matched===s.pairs.length ? '🎉 All matched!' : `✓ ${face(A).textContent} = ${face(B).textContent}`, false);
+        } else {
+          const ms=readMs(face(pair[0]).textContent, face(pair[1]).textContent);
+          pair.forEach(x=>{ face(x).style.boxShadow='0 0 0 .4cqh var(--red), var(--shadow)';
+            const tm=x.querySelector('.mtimer');
+            // 先归位再强制回流（读 offsetWidth），倒计时条才会真的走完 ms —— 用 rAF 在后台标签页里
+            // 会被浏览器暂停，条不动而牌照样翻回去，等于又变回「猝不及防」。
+            tm.style.transition='none'; tm.style.transform='scaleX(1)'; tm.style.opacity=1; void tm.offsetWidth;
+            tm.style.transition=`transform ${ms}ms linear`; tm.style.transform='scaleX(0)'; });
+          say('✗ Not a pair — read both, then tap anywhere', true);
+          const h=()=>flipBack();
+          pending={cards:pair, h, t:setTimeout(flipBack, ms)};
+          d.addEventListener('pointerdown',h,true);
+        }
       } }));
     return d; };
 
@@ -975,7 +1100,9 @@ window.LESSON = { id:'2A1', title:'Song of the Humpback · Words', slides:[
       if(c.classList.contains('right')) return;
       if(c.dataset.ok==='1'){ c.classList.add('right'); got++;
         msg.textContent = got>=need ? '✓ All found!' : 'One more…'; }
-      else { c.classList.add('wrong'); msg.textContent='That word can’t follow it — try again';
+      // 默认保持搭配题的原文案（改默认值会把别的单元 8 处真搭配题的提示降级 —— 2026-08-14 DECK-38），
+      // 非搭配类的 pick2 自己传 wrongMsg（2026-08-14 DECK-26）。
+      else { c.classList.add('wrong'); msg.textContent = s.wrongMsg || 'That word can’t follow it — try again';
         setTimeout(()=>c.classList.remove('wrong'),480); }
     }));
     return d; };

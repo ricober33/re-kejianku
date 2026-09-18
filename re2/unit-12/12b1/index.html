@@ -160,7 +160,12 @@ mark{background:var(--amber-l);color:var(--orange-d);padding:0 .18em;border-radi
 .revealbox.show{max-height:40cqh;opacity:1;padding-top:1.8cqh;padding-bottom:1.8cqh}
 
 /* ---- 词汇翻卡 ---- */
-.vgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:1.8cqh 1.6cqw;margin-top:2.4cqh;flex:1;min-height:0}
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:1.8cqh 1.6cqw;margin-top:2.4cqh;flex:1;min-height:0;padding-bottom:8cqh}
+/* 2026-08-18 Rico 点头后加的 padding-bottom：`#nav` 是 position:fixed（bottom:2cqh + 高约 4.6cqh），
+   而 .vgrid 是 flex:1 填满高度，底行的下沿永远压在翻页条那条带上 —— 1920×1080 实测第 4 张卡
+   右下角擦进 #nav 4px，`check_clickable.py` 判 FAIL。这条 bug 今天逼出过三次绕路
+   （八张翻卡拆成 4+4、翻牌 4 对补到 6 对、本条）。**射程可静态证明 = 只有一副课件**：
+   `.vgrid` 只在 `R.vocabFlip` 里出现，而全工程只有 `REF/Unit06/6C.html` 用 vocabFlip。 */
 .flip{perspective:1400px;cursor:pointer}
 .flip .in{position:relative;width:100%;height:100%;transition:transform .55s;transform-style:preserve-3d}
 .flip.on .in{transform:rotateY(180deg)}
@@ -198,6 +203,16 @@ mark{background:var(--amber-l);color:var(--orange-d);padding:0 .18em;border-radi
 .scorepill{position:absolute;top:5cqh;right:5cqw;z-index:3;background:var(--green);color:#fff;
   font-size:2.1cqh;font-weight:700;padding:.7cqh 1.6cqw;border-radius:999px;box-shadow:var(--shadow)}
 .gamemsg{text-align:center;font-size:2.4cqh;font-weight:700;color:var(--green-d);margin-top:2cqh;min-height:3cqh}
+/* 空的提示条不许占位、更不许压在卡片上：翻牌页底排四张牌下缘约 10% 被它盖住，三视口都点不动
+   （2026-08-14 第五轮 DECK-62）。它有内容时照旧显示，`min-height` 只在有字时才需要。 */
+.gamemsg:empty{min-height:0;margin-top:0;pointer-events:none}
+/* 翻牌页底排的牌下缘会伸到固定翻页条 #nav 底下（实测越界约 6px，三视口都点不动）——
+   给牌阵留出翻页条的高度（2026-08-14 第五轮 DECK-62）。
+   注意：`overlap_check.py` 抓不到这一类，它只比**有文字的**元素，而翻牌背面是空的。 */
+.memgrid{padding-bottom:7cqh;align-content:start;grid-auto-rows:minmax(0,1fr)}
+/* 牌用 `aspect-ratio` 定高，行高不够时会**溢出到行外**（这才是压到翻页条上的真原因，
+   只加 padding 挡不住）。在翻牌页里让牌**填满所在行**、不再按比例撑高。 */
+.memgrid .mcard{aspect-ratio:auto;height:100%;min-height:0}
 
 /* ---- 猜糖游戏 / 揭晓卡 ---- */
 .guessrow{display:flex;gap:2cqw;margin-top:3cqh;justify-content:center}
@@ -316,14 +331,14 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
 /* 1 */ {type:'hero', bg:'dark', img:'hero_cave.jpg',
   eyebrow:'📖 Unit 12 · Reading B',
   title:'Dark Descent', sub:'Reading B · Lesson 1',
-  body:'Last time people went **up**. Today we go **down** — into the deepest known cave on Earth, two kilometers below the door. 🕯️'},
+  body:'Last time people went **up**. Today we go **down** — into the deepest known cave on Earth. First the unit **video**, then the **10 words**. 🕯️'},
 
 /* 2 */ {type:'journey', bg:'mint', timer:'0–2 min',
   eyebrow:'🗺️ Your unit journey', title:'Where we are in Unit 12',
   steps:[
     {n:'done', e:'🔤', t:'Words for Reading A', state:'done'},
     {n:'done', e:'📖', t:'The Dream of Flight', state:'done'},
-    {n:'TODAY', e:'🔤', t:'Words for Reading B', state:'now'},
+    {n:'TODAY', e:'🎬', t:'Video + words for Reading B', state:'now'},
     {n:'last', e:'🗺️', t:'Read it and draw it'}],
   note:'Same unit, opposite direction. Reading A went up into the sky; Reading B goes **two kilometers straight down**.'},
 
@@ -357,37 +372,75 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
       ans:'they were out of supplies and time'}],
   discuss:{t:'Guess first', s:'Type your three guesses, then we reveal. All three come back in the reading.', starter:'I guess about…'}},
 
-/* 6 */ {type:'vocabIntro', bg:'peach', timer:'13–14 min',
+/* 6 */ {type:'videoBefore', bg:'sky', timer:'13–17 min',
+  eyebrow:'🎬 Before you watch · three words from the video',
+  title:'Which meaning is right?',
+  body:'These three come out of the unit video you are about to watch. Tap the meaning you think is right — the card turns green if you are correct.',
+  qs:[
+    {q:'a **geologist** —', opts:[
+      {t:'a scientist who studies rocks', ok:1},
+      {t:'a person who maps the stars', ok:0}]},
+    {q:'to **survey** a place —', opts:[
+      {t:'to ask people what they think of it', ok:0},
+      {t:'to study it, for example to make a map of it', ok:1}]},
+    {q:'**narrow** —', opts:[
+      {t:'the opposite of wide', ok:1},
+      {t:'the opposite of deep', ok:0}]}]},
+
+/* 7 */ {type:'content', bg:'lilac', timer:'17–19 min',
+  eyebrow:'🤔 Before you watch · predict', title:'How do you measure a cave nobody has mapped?',
+  body:'In 2010 a geologist swam into a cave on the New Zealand coast and found it was the **longest sea cave in the world**. Some passages are as narrow as your body; some are full of water right up to the ceiling.<br><br>**Predict:** how does a team actually get through a cave like that?',
+  chips:[
+    {t:'🛶 by canoe', cl:'var(--amber-l)', c:'var(--amber-d)'},
+    {t:'🏊 swimming underwater', cl:'var(--teal-l)', c:'var(--teal-d)'},
+    {t:'🧎 crawling', cl:'var(--purple-l)', c:'var(--purple-d)'}],
+  discuss:{t:'Your prediction', s:'Pick one and say why — or say all three and defend it.', starter:'I think they get through by…'}},
+
+/* 8 */ {type:'video', bg:'dark', timer:'19–24 min',
+  eyebrow:'🎥 Watch', title:'Sea Caves',
+  src:'SeaCaves.mp4',
+  recall:'Watch for **three** things: **1)** how long Matainaka Cave is, **2)** two things the rock formations record, **3)** one reason the team maps the cave in 3-D.'},
+
+/* 9 */ {type:'content', bg:'mint', timer:'24–27 min',
+  eyebrow:'💬 After the video · say it back', title:'What did you see?',
+  body:'**1)** How long is the cave, and how does that compare with the next longest?<br>**2)** What do the rock formations record?<br>**3)** Barth went in "to satisfy my curiosity". **Is curiosity a good enough reason to take that risk?**',
+  chips:[
+    {t:'📏 about 1.5 km', cl:'var(--teal-l)', c:'var(--teal-d)'},
+    {t:'🌡️ a record of climate change', cl:'var(--purple-l)', c:'var(--purple-d)'},
+    {t:'🌊 evidence of past earthquakes', cl:'var(--amber-l)', c:'var(--amber-d)'}],
+  discuss:{t:'One line each', s:'Everyone types ONE sentence. Use your own words, not the video\'s.', starter:'In the video I saw…'}},
+
+/* 10 */ {type:'vocabIntro', bg:'peach', timer:'27–28 min',
   eyebrow:'🔤 Vocabulary', title:'Meet the words for "Dark Descent"',
   body:'Ten words. **Six** we’ll know well (with photos), **four** more to recognize. You’ll **USE** these next lesson.',
   words:['depth','supplies','block','emerge','disappointed','necessity','conquer','ease','relatively','out of time']},
 
-/* 7  */ {type:'spotlight', timer:'14–26 min', bg:'sky', c:'blue', n:'1 / 6', w:'depth', ipa:'/depθ/', pos:'n.', img:'w_depth.jpg',
+/* 11 */ {type:'spotlight', timer:'28–40 min', bg:'sky', c:'blue', n:'1 / 6', w:'depth', ipa:'/depθ/', pos:'n.', img:'w_depth.jpg',
   def:'how deep something is — the distance from the top down to the bottom',
   ccq:'Height goes up from your feet; depth goes down from your feet. Krubera is measured in depth.',
   ex:'The team also hoped to be the first to reach a depth of 2,000 meters.'},
-/* 8  */ {type:'spotlight', bg:'mint', c:'teal', n:'2 / 6', w:'supplies', ipa:'/səˈplaɪz/', pos:'n. (plural)', img:'w_supplies.jpg',
+/* 12 */ {type:'spotlight', bg:'mint', c:'teal', n:'2 / 6', w:'supplies', ipa:'/səˈplaɪz/', pos:'n. (plural)', img:'w_supplies.jpg',
   def:'the food, water and other things you take with you and use up',
   ccq:'Supplies get smaller every day. When they run low, the trip is over.',
   ex:'After nearly four weeks underground, with supplies running low, the team was out of time.'},
-/* 9  */ {type:'spotlight', bg:'lemon', c:'amber', n:'3 / 6', w:'block', ipa:'/blɒk/', pos:'v.', img:'w_block.jpg',
+/* 13 */ {type:'spotlight', bg:'lemon', c:'amber', n:'3 / 6', w:'block', ipa:'/blɒk/', pos:'v.', img:'w_block.jpg',
   def:'to stop somebody or something from getting past',
   ccq:'Something that blocks your way stops you moving forward — it does not have to be a wall.',
   ex:'Here, progress was blocked by a sump—a passage filled with water.'},
-/* 10 */ {type:'spotlight', bg:'lilac', c:'purple', n:'4 / 6', w:'emerge', ipa:'/ɪˈmɜːrdʒ/', pos:'v.', img:'w_emerge.jpg',
+/* 14 */ {type:'spotlight', bg:'lilac', c:'purple', n:'4 / 6', w:'emerge', ipa:'/ɪˈmɜːrdʒ/', pos:'v.', img:'w_emerge.jpg',
   def:'to come out of a place where you could not be seen',
   ccq:'You emerge FROM somewhere — out of water, out of a cave, out of the dark.',
   ex:'After a short test dive, Samokhin emerged, smiling.'},
-/* 11 */ {type:'spotlight', bg:'peach', c:'green', n:'5 / 6', w:'disappointed', ipa:'/ˌdɪsəˈpɔɪntɪd/', pos:'adj.', img:'w_disappointed.jpg',
+/* 15 */ {type:'spotlight', bg:'peach', c:'green', n:'5 / 6', w:'disappointed', ipa:'/ˌdɪsəˈpɔɪntɪd/', pos:'adj.', img:'w_disappointed.jpg',
   def:'unhappy because something you hoped for did not happen',
   ccq:'Disappointed needs a hope first. No hope, no disappointment.',
   ex:'Gennady Samokhin dove to the bottom but was disappointed: “No chance to get through,” he said.'},
-/* 12 */ {type:'spotlight', bg:'rose', c:'red', n:'6 / 6', w:'necessity', ipa:'/nəˈsesəti/', pos:'n.', img:'w_necessity.jpg',
+/* 16 */ {type:'spotlight', bg:'rose', c:'red', n:'6 / 6', w:'necessity', ipa:'/nəˈsesəti/', pos:'n.', img:'w_necessity.jpg',
   def:'a thing you must have — not a thing you would like to have',
   ccq:'Five tons of necessities went down that cave. Nobody carries five tons of nice-to-haves.',
   ex:'Bringing over five tons of equipment and other necessities with them, they established underground camps.'},
 
-/* 13 */ {type:'game', timer:'26–30 min', bg:'mint', eyebrow:'⚡ Game · retrieve the 6', title:'Which word matches?',
+/* 17 */ {type:'game', timer:'40–44 min', bg:'mint', eyebrow:'⚡ Game · retrieve the 6', title:'Which word matches?',
   rounds:[
     {def:'how deep something is, from the top down', ans:'depth', opts:['block','depth','emerge','supplies']},
     {def:'the food and water you take and use up', ans:'supplies', opts:['supplies','necessity','depth','emerge']},
@@ -396,7 +449,7 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
     {def:'unhappy because a hope did not happen', ans:'disappointed', opts:['depth','disappointed','block','supplies']},
     {def:'a thing you must have', ans:'necessity', opts:['necessity','emerge','disappointed','block']}]},
 
-/* 14 */ {type:'quickset', bg:'lilac', timer:'30–33 min',
+/* 18 */ {type:'quickset', bg:'lilac', timer:'44–47 min',
   eyebrow:'🔤 Four more words to recognize', title:'Four more words',
   words:[
     {w:'conquer', pos:'v.', def:'to beat something very hard, in the end — "a feat compared to **conquering** the North and South Poles"'},
@@ -404,7 +457,7 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
     {w:'relatively', pos:'adv.', def:'compared with the others, quite — "a team of Ukrainian cavers reached the sump **relatively** quickly"'},
     {w:'out of time', pos:'phrase', def:'having no time left — "with supplies running low, the team was **out of time**"'}]},
 
-/* 15 */ {type:'match', bg:'rose', timer:'33–36 min',
+/* 19 */ {type:'match', bg:'rose', timer:'47–50 min',
   eyebrow:'🧩 Practice · match', title:'Match the word to its meaning',
   pairs:[
     {w:'conquer', m:'to beat it in the end'},
@@ -412,13 +465,13 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
     {w:'relatively', m:'compared with others'},
     {w:'out of time', m:'no time left'}]},
 
-/* 16 */ {type:'gapfill', bg:'lemon', timer:'36–40 min', eyebrow:'✍️ Practice · use the words',
+/* 20 */ {type:'gapfill', bg:'lemon', timer:'50–54 min', eyebrow:'✍️ Practice · use the words',
   title:'Tap a word, then tap the gap',
   text:'1. Something that {0} your way stops you from moving forward.  \n2. A(n) {1} is something that you must have.  \n3. If you go camping, you need to take {2} like food and water.  \n4. When the bell rings and you have not finished the test, you are {3}.',
   words:['blocks','necessity','supplies','out of time'],
   answers:{0:'blocks',1:'necessity',2:'supplies',3:'out of time'}},
 
-/* 17 */ {type:'truefalse', bg:'mint', timer:'40–43 min',
+/* 21 */ {type:'truefalse', bg:'mint', timer:'54–57 min',
   eyebrow:'⚖️ True or false?', title:'Do you really know these words?',
   statements:[
     {t:'If you conquer a mountain, you gave up halfway.', ans:false,
@@ -430,7 +483,7 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
     {t:'If a job is done relatively quickly, we are comparing it with something else.', ans:true,
      why:'Relatively always compares. The Ukrainians were fast compared with the first team.'}]},
 
-/* 18 */ {type:'content', bg:'lilac', timer:'43–46 min',
+/* 22 */ {type:'content', bg:'lilac', timer:'57–60 min',
   eyebrow:'🔗 Words travel in chunks', title:'Say the whole chunk, not just the word',
   body:'Good learners remember words **with their partners**. Tap and say each chunk aloud:',
   chips:[
@@ -441,32 +494,32 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
     {t:'be <b>out of time</b>', cl:'var(--amber-l)', c:'var(--amber-d)'}],
   discuss:{t:'Your turn', s:'Type one chunk in a sentence about your own week.', starter:'I was out of time when…'}},
 
-/* 19 */ {type:'sort', bg:'sky', timer:'46–49 min',
+/* 23 */ {type:'sort', bg:'sky', timer:'60–63 min',
   eyebrow:'🗂️ Sort · tap a card, then its box', title:'Does it help you, or stop you?',
   buckets:[{id:'h', label:'🟢 Helps you go on', c:'green'}, {id:'s', label:'🔴 Stops you', c:'red'}],
   items:[{t:'supplies', b:'h'},{t:'ropes that ease the climb', b:'h'},{t:'a camp to sleep in', b:'h'},
          {t:'a passage full of water', b:'s'},{t:'being out of time', b:'s'},{t:'a blocked tunnel', b:'s'}]},
 
-/* 20 */ {type:'production', bg:'mint', timer:'49–53 min',
+/* 24 */ {type:'production', bg:'mint', timer:'63–67 min',
   eyebrow:'✍️ Production · write', title:'Use the words for real',
   body:'Write **ONE true sentence** about a time something blocked you and you had to stop, using **TWO** of today’s words.',
   model:'I was out of time in the exam, so I was disappointed with my last answer.',
   discuss:{t:'Share it', s:'Type your sentence in the chat — I’ll read two aloud.', starter:'I had to stop because…'}},
 
-/* 21 */ {type:'rank', bg:'lemon', timer:'53–56 min',
+/* 25 */ {type:'rank', bg:'lemon', timer:'67–70 min',
   eyebrow:'🥇 Rank & justify', title:'What do you take down a cave first?',
   body:'You can carry five things into a cave for four weeks. Tap them in order — most necessary first — then defend your number 1.',
   items:['food and water','rope','a phone line to the surface','a warm sleeping bag','a camera'],
   discuss:{t:'Defend your top pick', s:'Say why your #1 is a necessity and not just nice to have.', starter:'My number one is … because …'}},
 
-/* 22 */ {type:'content', bg:'peach', timer:'56–58 min',
+/* 26 */ {type:'content', bg:'peach', timer:'70–72 min',
   eyebrow:'📖 Before you read', title:'Next lesson: you’ll read "Dark Descent"',
   body:'You built the **words**. Next lesson you **read** with them, and learn the last skill of the book: when a text is full of numbers, you stop writing sentences and **draw the text instead** — a picture shaped like the thing you read about. Watch for: **depth · supplies · block · emerge · disappointed · necessity**.',
   chips:[
     {t:'🕳️ 2,197 meters down', cl:'var(--purple-l)', c:'var(--purple-d)'},
     {t:'🗺️ notes you can draw', cl:'var(--orange-l)', c:'var(--orange-d)'}]},
 
-/* 23 */ {type:'exit', bg:'mint', timer:'58–60 min',
+/* 27 */ {type:'exit', bg:'mint', timer:'72–74 min',
   eyebrow:'🎒 Before you go', title:'Nice work today! 🎉',
   recap:[
     {n:'6', t:'words you can USE'},
@@ -496,7 +549,12 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
   function rt(s){ if(s==null) return '';
     return String(s)
       .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
-      .replace(/__(.+?)__/g,'<b>$1</b>')
+      // `__粗体__` 的内容不许含下划线，且前后不许再挨着下划线 —— 否则 `I think ______ because ______.`
+      // 里的填空线会被当成粗体标记吃掉（2026-08-14 独立审查 DECK-15：三副课件 18 处填空线残缺，
+      // 其中包括 F 级唯一验收物「写一句」的三档句框）。全工程实测没有任何一副课件用 `__粗体__`。
+      // 不许用后行断言 `(?<!_)`：那是 ES2018，旧 WebKit（含部分 ClassIn 内置浏览器）解析到就整副白屏
+      // （2026-08-14 终审 DECK-34）。改成把前一个字符捕获出来再放回去，ES5 就能跑。
+      .replace(/(^|[^_])__([^_]+?)__(?!_)/g,'$1<b>$2</b>')
       .replace(/\*(.+?)\*/g,'<i>$1</i>'); }
   function el(tag, cls, html){ const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; }
 
@@ -658,7 +716,12 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
           ${rt(s.def)}${s.ccq?`<div style="font-size:2cqh;margin-top:1cqh;color:var(--teal-d)">💡 ${rt(s.ccq)}</div>`:''}</div>
         <div class="big" style="font-size:2.6cqh;color:var(--ink-soft);font-style:italic;margin-top:2cqh">"${rt(s.ex)}"</div>
       </div>
-      <div class="pic"><img src="${imgsrc(s.img)}" alt=""></div>`;
+      ${/* 2026-09-10：词卡也认 `fit:'contain'`，写法与 R.reading（本文件第 294 行）逐字相同，
+            样式复用 kai.css `.reading .pic.contain img`。不写就照旧 cover，全线其余词卡一张不动。
+            起因：1A1 p14 的 `w_method.jpg` 是一张折纸分步图，左右各被裁掉 15.1%，
+            屏幕上 `step 5 completed` 只剩 `ompleted`、`step 8 done - note curve` 只剩 `one - urve`、
+            右边的 `done!` 整个不见 —— 而那些步骤字正是这张图之所以能表示 method 的原因。 */''}
+      <div class="pic${s.fit==='contain'?' contain':''}"><img src="${imgsrc(s.img)}" alt=""></div>`;
     addBlobs(d,s.bg||'peach');
     const btn=d.querySelector('.revealbtn'); btn.addEventListener('click',()=>d.querySelector('.revealbox').classList.toggle('show'));
     return d; };
@@ -753,10 +816,18 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
       cnt.textContent='✋ voted!'; }));
     return d; };
 
+  // 2026-08-24：`discuss` 补进来。全 29 个渲染器里有 7 个调 `discuss(s.discuss)`，**唯独 reading 漏了**，
+  // 于是写在 reading 页上的课前讨论题（题目 + 起句支架）学生一个字都看不到 —— 第十五把尺子
+  // `renderer_field_check` 判的「死字段」，跟 §36 那条 `wrongMsg` 同族：不是数据脏，是数据到不了 DOM。
+  // **射程是扫出来的**：全工程 131 副在用课件、366 张 reading 页，带 `discuss` 的只有 3 张
+  //（REF 3B p3「Two questions before we read」· 4A p3 与 4B p3「Before we start」），**都未上线**；
+  // 其余 363 张没有这个字段，`discuss()` 第一行 `if(!d) return ''`，渲染结果一字不变。
+  // 放在正文之后、图片之前：与 spotlight/comp 等页的位置一致（讨论条一律贴在该页主体内容下方）。
   R.reading = (s)=>{ const d=el('div','slide reading '+('bg-'+(s.bg||'peach')));
     d.innerHTML = `${timerPill(s.timer)}<div class="txt"><div class="parabadge" style="--c:var(--${s.c||'teal'})">📖 ${rt(s.tag||'Paragraph')}</div>
         <div class="para">${rt(s.para)}</div>
-        ${s.q?`<button class="revealbtn">${rt(s.qlabel||'What is the main idea?')}</button><div class="revealbox">${rt(s.q)}</div>`:''}</div>
+        ${s.q?`<button class="revealbtn">${rt(s.qlabel||'What is the main idea?')}</button><div class="revealbox">${rt(s.q)}</div>`:''}
+        ${discuss(s.discuss)}</div>
       ${s.img?`<div class="pic${s.fit==='contain'?' contain':''}"><img src="${imgsrc(s.img)}" alt=""></div>`:''}`;
     addBlobs(d,s.bg||'peach');
     const btn=d.querySelector('.revealbtn'); if(btn) btn.addEventListener('click',()=>d.querySelector('.revealbox').classList.toggle('show'));
@@ -772,7 +843,7 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
             <div class="catlabel" style="--c:var(--${cs[i%cs.length]}-d)">${rt(q.cat)}</div></div>
           <div class="big" style="font-size:2.6cqh;line-height:1.2">${rt(q.q)}</div>
           ${q.opts?`<div class="copts" data-ans="${String(q.ans).replace(/"/g,'&quot;')}">${q.opts.map(o=>`<button class="copt">${rt(o)}</button>`).join('')}</div>`:''}
-          <div class="hintbox" style="--cl:var(--${cs[i%cs.length]}-l);--c:var(--${cs[i%cs.length]}-d)">💡 ${rt(q.hint)}</div>
+          <div class="hintbox" style="--cl:var(--${cs[i%cs.length]}-l);--c:var(--${cs[i%cs.length]}-d)"><span>💡 ${rt(q.hint)}</span></div>
         </div>`).join('')}</div>
       <div class="row" style="margin-top:2cqh;gap:2cqw;align-items:center">
         <button class="revealbtn" style="margin-top:0">Reveal answers ✓</button>
@@ -819,7 +890,7 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
           <div style="flex:1;font-size:2.4cqh;color:var(--ink-soft);font-style:italic">${rt(r.starter)}</div>
         </div>`).join('')}
       </div>
-      <div class="hintbox" style="margin-top:1.8cqh;max-width:74cqw;--cl:var(--green-l);--c:var(--green-d)">✍️ ${rt(s.tip||'Put your 3 lines together — that is your first paragraph! Type it in the chat.')}</div>
+      <div class="hintbox" style="margin-top:1.8cqh;max-width:74cqw;--cl:var(--green-l);--c:var(--green-d)"><span>✍️ ${rt(s.tip||'Put your 3 lines together — that is your first paragraph! Type it in the chat.')}</span></div>
       ${discuss(s.discuss)}`;
     addBlobs(d,s.bg||'lilac'); return d; };
 
@@ -916,24 +987,78 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
   R.memory = (s)=>{ const d=el('div','slide '+('bg-'+(s.bg||'rose')));
     let cards=[]; s.pairs.forEach((p,i)=>{ cards.push({k:i,t:p.a,face:'a'}); cards.push({k:i,t:p.b,face:'b'}); });
     cards=cards.map((c,i)=>({...c,i})).sort(()=>Math.random()-0.5);
-    const cols = cards.length<=8?4:(cards.length<=12?4:5);
+    // 2026-08-14 实测：16 张退回 4 列会变成 4 行，反而顶到翻页条上（overlap_check 实测 6094 > 1500）。
+    // 所以**引擎不动**，回到原判据；「末行别只剩一张」改成出题时的约束：
+    // 翻牌页的牌数按 5 列排要么整除、要么余数 ≥2（如 14 张 = 5/5/4）。
+    // 2026-09-10：≤6 张排 3 列（3+3），不再按 4 列排成 4+2 —— 后者右下角空一大块，
+    // 而且行高被拉高。全工程只有 RE1 7B1 p26 是 6 张，其余 33 副全是 12 张，这一格不影响它们。
+    const cols = cards.length<=6?3:(cards.length<=8?4:(cards.length<=12?4:5));
     d.innerHTML = `<div class="scorepill">🧩 <span class="mp">0</span>/${s.pairs.length}</div>
       ${eyebrow(s.eyebrow||'Memory match · flip two cards')}<h2 style="font-size:4cqh">${rt(s.title||'Find the pairs')}</h2>
-      <div class="grid" style="grid-template-columns:repeat(${cols},1fr);gap:1.4cqh 1.2cqw;margin-top:2cqh;flex:1;min-height:0">
-        ${cards.map(c=>`<div class="mcard" data-k="${c.k}" data-i="${c.i}" style="position:relative;cursor:pointer;aspect-ratio:1.55">
+      <div class="grid memgrid" style="grid-template-columns:repeat(${cols},1fr);gap:1.4cqh 1.2cqw;margin-top:2cqh;flex:1;min-height:0">
+        ${/* 2026-09-10（RE1 全线体检）：**牌不许再用行内 `aspect-ratio` 定形。**
+              病历：7B1 p26 只有 6 张牌 → 4 列 2 行 → 行高被拉到 242px →
+              牌宽 = 242 × 1.55 = 375px，而每一格只有 265px，牌**溢出到格子外面**，
+              第 4 张整张跑到屏幕右边看不见也点不到（1280 / 1366 / 1920 三个宽度都是）。
+              `kai.css` 第 210 行 `.memgrid .mcard{aspect-ratio:auto;height:100%}` 本来就是
+              为了关掉它，但**行内样式压过样式表**，那条规则一天都没生效过。
+              牌数 12 的页（全工程其余 33 副全是 12 张）行高只有 1/3，牌宽没到格宽，
+              所以一直没被发现 —— 这不是「12 张没问题」，是「12 张恰好没撞上」。
+              去掉行内这一条之后，形由 `kai.css` 那行说了算：填满格子、不再按比例撑宽。 */''}
+        ${cards.map(c=>`<div class="mcard" data-k="${c.k}" data-i="${c.i}" data-f="${c.face}" style="position:relative;cursor:pointer">
           <div class="mface mback" style="position:absolute;inset:0;background:var(--purple);border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;font-size:3.4cqh;color:#fff;box-shadow:var(--shadow)">?</div>
-          <div class="mface mfront" style="position:absolute;inset:0;background:#fff;border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;text-align:center;padding:.6cqh .8cqw;font-size:1.9cqh;font-weight:700;color:var(--ink);box-shadow:var(--shadow);opacity:0;line-height:1.15">${rt(c.t)}</div></div>`).join('')}
-      </div><div class="gamemsg"></div>`;
+          <div class="mface mfront" style="position:absolute;inset:0;background:#fff;border-radius:1.4cqh;display:flex;align-items:center;justify-content:center;text-align:center;padding:.6cqh .8cqw;font-size:1.9cqh;font-weight:700;color:var(--ink);box-shadow:var(--shadow);opacity:0;line-height:1.15">${rt(c.t)}</div>
+          <div class="mtimer" style="position:absolute;left:10%;right:10%;bottom:.7cqh;height:.5cqh;border-radius:99px;background:var(--red);opacity:0;transform:scaleX(1);transform-origin:left center;z-index:3;pointer-events:none"></div></div>`).join('')}
+      </div><div class="gamemsg"></div>
+      <div class="memfb" style="position:absolute;left:50%;transform:translateX(-50%);bottom:9.5cqh;z-index:4;padding:.7cqh 1.8cqw;border-radius:99px;font-size:2.2cqh;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .15s;pointer-events:none;box-shadow:var(--shadow)"></div>`;
     addBlobs(d,s.bg||'rose');
-    let open=[], matched=0, lock=false;
+    // 2026-09-01 老师上完 8A1 的原话：学生很爱玩，但「翻错的两张扣回去太快，来不及读、也来不及对」。
+    // 原来是一刀切 setTimeout 800ms —— 一个词 + 一句释义 800ms 读不完，这题就退化成「背位置」，
+    // 不是「读词 → 读义 → 判断配不配」。改三处，少一条都不算修好：
+    //  ① 停留时间按两张牌的实际字数算（短词对 ≈3.4s，长释义对 ≈4.5s，封顶 6s），不再是固定值；
+    //  ② 停留期间两张牌打红圈 + 牌底走一条倒计时条 —— 原来是无声消失，学生只知道「没了」，
+    //     不知道「这两个不配」，也不知道还剩多久（倒计时画在牌上，不占版面高度，不动 overlap 判据）；
+    //  ③ 读完点屏幕任意处（或直接点下一张牌）立刻翻回，快的学生不被慢速拖着走。
+    // 配对成功时把「词 = 义」回显出来，让全班把这一对读出来，而不是只看到分数 +1。
+    // 反馈条走 .memfb 这个浮层，**不走 .gamemsg**：.gamemsg 在 memgrid（flex:1）之后，实测
+    // 一有字就压在 #nav 翻页条上（1280/1366/1920 三视口归一化 3297/3307/3303，阈值 1500）。
+    // 原来只有终局那句「🎉 All matched!」走这里、一节课出现一次，所以从没被量到；
+    // 现在每翻错一次都要出字，压着翻页条的提示等于没提示。
+    const READ_MIN=1800, READ_PER_CHAR=60, READ_MAX=6000;
+    const readMs=(a,b)=>Math.min(READ_MAX, READ_MIN+((a||'').length+(b||'').length)*READ_PER_CHAR);
+    const face=x=>x.querySelector('.mfront');
+    const fb=d.querySelector('.memfb');
+    const say=(t,bad)=>{ if(!t){ fb.style.opacity=0; fb.textContent=''; return; }
+      fb.textContent=t; fb.style.color=bad?'var(--red-d)':'var(--green-d)';
+      fb.style.background=bad?'var(--red-l)':'var(--green-l)'; fb.style.opacity=1; };
+    let open=[], matched=0, lock=false, pending=null;
+    const flipBack=()=>{ if(!pending) return; const p=pending; pending=null;
+      clearTimeout(p.t); d.removeEventListener('pointerdown',p.h,true);
+      p.cards.forEach(x=>{ const f=face(x), tm=x.querySelector('.mtimer');
+        f.style.opacity=0; f.style.boxShadow='var(--shadow)'; x.querySelector('.mback').style.opacity=1;
+        tm.style.transition='none'; tm.style.opacity=0; tm.style.transform='scaleX(1)'; x.classList.remove('up'); });
+      say(''); open=[]; lock=false; };
     d.querySelectorAll('.mcard').forEach(c=>c.addEventListener('click',()=>{
       if(lock||c.dataset.done||c.classList.contains('up'))return;
-      c.querySelector('.mfront').style.opacity=1; c.querySelector('.mback').style.opacity=0; c.classList.add('up'); open.push(c);
-      if(open.length===2){ lock=true;
-        if(open[0].dataset.k===open[1].dataset.k){ open.forEach(x=>{x.dataset.done=1;x.style.pointerEvents='none';x.querySelector('.mfront').style.background='var(--green-l)';});
+      face(c).style.opacity=1; c.querySelector('.mback').style.opacity=0; c.classList.add('up'); open.push(c);
+      if(open.length===2){ lock=true; const pair=open.slice();
+        if(pair[0].dataset.k===pair[1].dataset.k){ pair.forEach(x=>{x.dataset.done=1;x.style.pointerEvents='none';face(x).style.background='var(--green-l)';});
           matched++; d.querySelector('.mp').textContent=matched; open=[]; lock=false;
-          if(matched===s.pairs.length) d.querySelector('.gamemsg').textContent='🎉 All matched!';
-        } else { setTimeout(()=>{ open.forEach(x=>{x.querySelector('.mfront').style.opacity=0;x.querySelector('.mback').style.opacity=1;x.classList.remove('up');}); open=[]; lock=false; },800); }
+          const A=pair.find(x=>x.dataset.f==='a')||pair[0], B=pair.find(x=>x.dataset.f==='b')||pair[1];
+          say(matched===s.pairs.length ? '🎉 All matched!' : `✓ ${face(A).textContent} = ${face(B).textContent}`, false);
+        } else {
+          const ms=readMs(face(pair[0]).textContent, face(pair[1]).textContent);
+          pair.forEach(x=>{ face(x).style.boxShadow='0 0 0 .4cqh var(--red), var(--shadow)';
+            const tm=x.querySelector('.mtimer');
+            // 先归位再强制回流（读 offsetWidth），倒计时条才会真的走完 ms —— 用 rAF 在后台标签页里
+            // 会被浏览器暂停，条不动而牌照样翻回去，等于又变回「猝不及防」。
+            tm.style.transition='none'; tm.style.transform='scaleX(1)'; tm.style.opacity=1; void tm.offsetWidth;
+            tm.style.transition=`transform ${ms}ms linear`; tm.style.transform='scaleX(0)'; });
+          say('✗ Not a pair — read both, then tap anywhere', true);
+          const h=()=>flipBack();
+          pending={cards:pair, h, t:setTimeout(flipBack, ms)};
+          d.addEventListener('pointerdown',h,true);
+        }
       } }));
     return d; };
 
@@ -976,7 +1101,9 @@ window.LESSON = { id:'12B1', title:'Dark Descent · Words', slides:[
       if(c.classList.contains('right')) return;
       if(c.dataset.ok==='1'){ c.classList.add('right'); got++;
         msg.textContent = got>=need ? '✓ All found!' : 'One more…'; }
-      else { c.classList.add('wrong'); msg.textContent='That word can’t follow it — try again';
+      // 默认保持搭配题的原文案（改默认值会把别的单元 8 处真搭配题的提示降级 —— 2026-08-14 DECK-38），
+      // 非搭配类的 pick2 自己传 wrongMsg（2026-08-14 DECK-26）。
+      else { c.classList.add('wrong'); msg.textContent = s.wrongMsg || 'That word can’t follow it — try again';
         setTimeout(()=>c.classList.remove('wrong'),480); }
     }));
     return d; };
