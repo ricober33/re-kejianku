@@ -639,6 +639,40 @@ window.LESSON = { id:'3C', title:'Right Dog for the Job · Unit Review', slides:
   }
   function ORD_gapAns(s){var m=s.answers||{},ks=Object.keys(m).sort(function(x,y){return (+x)-(+y);}),out=[],seen={};
     ks.forEach(function(k){var w=m[k];if(w&&!seen[w]){seen[w]=1;out.push(w);}});return out;}
+  /* ── 2026-09-26 外教反馈修（RE2 9B1 p20「The words and definitions are in order」
+     「For all the word activities - they are also in order」）。两处病：
+     ① 连线 / 排顺序 / 分类 / 翻牌原来用「sort + 随机比较」打乱 —— 不均匀：
+        4 组连线约 19% 一行没动，打乱了平均也还有 1.3 组正对着；排顺序 5 项约 9% 一打开就排好了。
+     ② 抢词游戏按作者顺序出题，作者顺序 = 前面单词页的教学顺序，学生不读释义也能猜下一题。
+     KAI_arrange：种子取内容哈希（同一页每次打开一样，截图可复现），试 200 次洗牌取罚分最低的一种。
+     KAI_orderPen(r)：r[k] = 显示第 k 项原来排第几。原位 +10；紧挨的两项保留原来的前后关系
+     （正着或倒着）+3；升序步数偏离一半再罚（防「整个倒过来」这类一眼能看出的排法）。ES5 写法。 */
+  function KAI_arrange(list,key,pen){
+    var n=list.length; if(n<2) return list.slice();
+    var rnd=ORD_rnd(ORD_seed(key)),best=list.slice(),bestP=Infinity,t,i,j,x,a,p;
+    for(t=0;t<200;t++){ a=list.slice();
+      for(i=n-1;i>0;i--){j=Math.floor(rnd()*(i+1));x=a[i];a[i]=a[j];a[j]=x;}
+      p=pen(a); if(p<bestP){bestP=p;best=a;} if(p===0)break; }
+    return best; }
+  function KAI_orderPen(r){ var p=0,up=0,k,n=r.length;
+    for(k=0;k<n;k++){ if(r[k]===k) p+=10;
+      if(k>0){ if(r[k]===r[k-1]+1||r[k]===r[k-1]-1) p+=3; if(r[k]>r[k-1]) up++; } }
+    return p+Math.max(0,Math.abs(up-(n-1)/2)-1); }
+  function KAI_taught(){ var out=[],seen={},S=(L&&L.slides)||[];
+    S.forEach(function(s){ if(s.type==='spotlight'&&s.w) out.push(s.w);
+      if(s.type==='quickset'&&s.words) s.words.forEach(function(x){ out.push(x.w||x); }); });
+    if(!out.length) S.forEach(function(s){ if(s.type==='vocabIntro'&&s.words) s.words.forEach(function(x){ out.push(x.w||x); }); });
+    return out.filter(function(w){ if(seen[w]) return false; seen[w]=1; return true; }); }
+  function KAI_gameRounds(s){ var rs=s.rounds||[]; if(rs.length<3) return s;
+    var tau=KAI_taught(), pos=rs.map(function(r){ return tau.indexOf(r.ans); }), up=0, k;
+    if(pos.some(function(p){ return p<0; })) return s;
+    for(k=1;k<pos.length;k++) if(pos[k]>pos[k-1]) up++;
+    if(up/(pos.length-1)<0.75) return s;   // 作者本来就打乱过的不动（有的带课卡写了「第 3 轮」）
+    var sorted=pos.slice().sort(function(a,b){ return a-b; }), rk=pos.map(function(p){ return sorted.indexOf(p); });
+    var o={},key; for(key in s) o[key]=s[key];
+    o.rounds=KAI_arrange(rs.map(function(r,i){ return {r:r,i:i}; }), rs.map(function(r){ return r.ans; }).join('|'),
+      function(a){ return KAI_orderPen(a.map(function(x){ return rk[x.i]; })); }).map(function(x){ return x.r; });
+    return o; }
 
   R.hero = (s)=>{ const d=el('div','slide hero '+('bg-'+(s.bg||'peach')));
     d.innerHTML = `${timerPill(s.timer)}<div class="lt">${eyebrow(s.eyebrow)}
@@ -760,7 +794,7 @@ window.LESSON = { id:'3C', title:'Right Dog for the Job · Unit Review', slides:
         <div class="w">${w.w}<small>${w.pos||''}</small></div><div class="d">${rt(w.def)}</div></div>`).join('')}</div>`;
     addBlobs(d,s.bg||'lilac'); return d; };
 
-  R.game = (s)=>{ const d=el('div','slide center '+('bg-'+(s.bg||'mint')));
+  R.game = (s)=>{ s=KAI_gameRounds(s); const d=el('div','slide center '+('bg-'+(s.bg||'mint')));
     d.innerHTML = `${timerPill(s.timer)}<div class="scorepill"><span class="qn">Q1 of ${s.rounds.length}</span> · ⭐ <span class="sc">0</span></div>
       ${eyebrow(s.eyebrow||'Game · choose the word')}<h2 style="font-size:4cqh">${rt(s.title||'Which word matches?')}</h2>
       <div class="game-def"></div><div class="opts"></div><div class="gamemsg"></div>
@@ -796,7 +830,9 @@ window.LESSON = { id:'3C', title:'Right Dog for the Job · Unit Review', slides:
       <div class="gamemsg"></div>`;
     addBlobs(d,s.bg||'mint');
     const wCol=d.querySelector('[data-col=w]'), mCol=d.querySelector('[data-col=m]'), msg=d.querySelector('.gamemsg');
-    const ms=s.pairs.map((p,idx)=>({...p,idx})); const shuf=[...ms].sort(()=>Math.random()-0.5);
+    const mkey=s.pairs.map(p=>p.w+'='+p.m).join('|');
+    const ms=KAI_arrange(s.pairs.map((p,idx)=>({...p,idx})),mkey+'#L',a=>KAI_orderPen(a.map(x=>x.idx)));
+    const shuf=KAI_arrange(ms,mkey+'#R',a=>KAI_orderPen(a.map(x=>ms.indexOf(x))));
     let sel=null, done=0;
     ms.forEach(p=>{ const b=el('div','opt',p.w); b.style.textAlign='left'; b.dataset.i=p.idx; b.dataset.side='w';
       b.addEventListener('click',()=>pick(b)); wCol.appendChild(b); });
@@ -932,7 +968,8 @@ window.LESSON = { id:'3C', title:'Right Dog for the Job · Unit Review', slides:
 
   // 分类拖桶：tap 一个 item，再 tap 正确的桶
   R.sort = (s)=>{ const d=el('div','slide '+('bg-'+(s.bg||'sky')));
-    const items=s.items.map((it,i)=>({...it,i})).sort(()=>Math.random()-0.5);
+    const items=KAI_arrange(s.items.map((it,i)=>({...it,i})),s.items.map(it=>it.b+':'+it.t).join('|'),
+      a=>KAI_orderPen(a.map(x=>x.i))+a.reduce((p,x,k)=>p+(k>1&&a[k-1].b===x.b&&a[k-2].b===x.b?4:0),0));
     d.innerHTML = `${timerPill(s.timer)}${eyebrow(s.eyebrow||'Sort it · tap a card, then its box')}<h2 style="font-size:4.2cqh">${rt(s.title)}</h2>
       <div class="row" style="gap:2cqw;margin-top:2cqh;align-items:stretch">
         ${s.buckets.map(b=>`<div class="card" data-b="${b.id}" style="flex:1;border-top:.8cqh solid var(--${b.c});min-height:30cqh">
@@ -971,7 +1008,9 @@ window.LESSON = { id:'3C', title:'Right Dog for the Job · Unit Review', slides:
 
   // 事件排序：按你认为的顺序点，点满后 Check
   R.sequence = (s)=>{ const d=el('div','slide '+('bg-'+(s.bg||'lilac')));
-    const items=s.items.map((it,i)=>({...it,i})).sort(()=>Math.random()-0.5);
+    const ords=s.items.map(it=>+it.order).sort((a,b)=>a-b);
+    const items=KAI_arrange(s.items.map((it,i)=>({...it,i})),s.items.map(it=>it.order+':'+it.t).join('|'),
+      a=>KAI_orderPen(a.map(x=>ords.indexOf(+x.order))));
     d.innerHTML = `${timerPill(s.timer)}${eyebrow(s.eyebrow||'Put it in order')}<h2 style="font-size:4.2cqh">${rt(s.title)}</h2>
       <div class="lead">${rt(s.body||'Tap the steps in the right order.')}</div>
       <div class="klist" style="margin-top:1.8cqh;max-width:74cqw">${items.map(it=>`<div class="krow seqit" data-o="${it.order}" style="cursor:pointer;background:#fff;border-radius:1.2cqh;padding:1.2cqh 1.4cqw;box-shadow:var(--shadow)">
@@ -1013,7 +1052,10 @@ window.LESSON = { id:'3C', title:'Right Dog for the Job · Unit Review', slides:
   // 记忆翻牌配对（词 ↔ 义/图）
   R.memory = (s)=>{ const d=el('div','slide '+('bg-'+(s.bg||'rose')));
     let cards=[]; s.pairs.forEach((p,i)=>{ cards.push({k:i,t:p.a,face:'a'}); cards.push({k:i,t:p.b,face:'b'}); });
-    cards=cards.map((c,i)=>({...c,i})).sort(()=>Math.random()-0.5);
+    { const nC=cards.length, cC=nC<=6?3:(nC<=8?4:(nC<=12?4:5));  // 列数公式与下面 cols 一致
+      cards=KAI_arrange(cards.map((c,i)=>({...c,i})),s.pairs.map(p=>p.a+'='+p.b).join('|'),a=>{ let p=0;
+        a.forEach((x,k)=>{ if(x.i===k) p+=2; const r=a[k+1], dn=a[k+cC];
+          if(r&&(k+1)%cC!==0&&r.k===x.k) p+=10; if(dn&&dn.k===x.k) p+=10; }); return p; }); }
     // 2026-08-14 实测：16 张退回 4 列会变成 4 行，反而顶到翻页条上（overlap_check 实测 6094 > 1500）。
     // 所以**引擎不动**，回到原判据；「末行别只剩一张」改成出题时的约束：
     // 翻牌页的牌数按 5 列排要么整除、要么余数 ≥2（如 14 张 = 5/5/4）。
