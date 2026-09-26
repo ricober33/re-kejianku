@@ -1,9 +1,9 @@
 {
-  "site_version": "2.19.0",
-  "updated_at": "2026-09-26T20:27:37+08:00",
+  "site_version": "2.20.0",
+  "updated_at": "2026-09-26T22:26:40+08:00",
   "content": {
     "re1-unit-1-1a1": {
-      "version": "1.0.4",
+      "version": "1.0.5",
       "path": "/re1/unit-1/1a1/"
     },
     "re1-unit-1-1a2": {
