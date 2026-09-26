@@ -1,6 +1,6 @@
 {
-  "site_version": "2.17.0",
-  "updated_at": "2026-09-26T12:41:26+08:00",
+  "site_version": "2.18.0",
+  "updated_at": "2026-09-26T19:15:11+08:00",
   "content": {
     "re1-unit-1-1a1": {
       "version": "1.0.4",
@@ -67,7 +67,7 @@
       "path": "/re2/unit-10/10b2/"
     },
     "re2-unit-11-11a1": {
-      "version": "1.0.4",
+      "version": "1.0.5",
       "path": "/re2/unit-11/11a1/"
     },
     "re2-unit-11-11a2": {
@@ -79,7 +79,7 @@
       "path": "/re2/unit-11/11b1/"
     },
     "re2-unit-11-11b2": {
-      "version": "1.0.3",
+      "version": "1.0.4",
       "path": "/re2/unit-11/11b2/"
     },
     "re2-unit-12-12a1": {
@@ -91,7 +91,7 @@
       "path": "/re2/unit-12/12a2/"
     },
     "re2-unit-12-12b1": {
-      "version": "1.0.4",
+      "version": "1.0.5",
       "path": "/re2/unit-12/12b1/"
     },
     "re2-unit-12-12b2": {
@@ -99,7 +99,7 @@
       "path": "/re2/unit-12/12b2/"
     },
     "re2-unit-2-2a1": {
-      "version": "1.0.4",
+      "version": "1.0.5",
       "path": "/re2/unit-2/2a1/"
     },
     "re2-unit-2-2a2": {
@@ -151,11 +151,11 @@
       "path": "/re2/unit-4/u3-u4-quiz/"
     },
     "re2-unit-5-5a1": {
-      "version": "1.0.5",
+      "version": "1.0.6",
       "path": "/re2/unit-5/5a1/"
     },
     "re2-unit-5-5a2": {
-      "version": "1.0.4",
+      "version": "1.0.5",
       "path": "/re2/unit-5/5a2/"
     },
     "re2-unit-5-5b1": {
@@ -227,15 +227,15 @@
       "path": "/re2/unit-9/9a1/"
     },
     "re2-unit-9-9a2": {
-      "version": "1.0.3",
+      "version": "1.0.4",
       "path": "/re2/unit-9/9a2/"
     },
     "re2-unit-9-9b1": {
-      "version": "1.0.4",
+      "version": "1.0.5",
       "path": "/re2/unit-9/9b1/"
     },
     "re2-unit-9-9b2": {
-      "version": "1.0.3",
+      "version": "1.0.4",
       "path": "/re2/unit-9/9b2/"
     },
     "f-unit-1-1a": {
@@ -279,7 +279,7 @@
       "path": "/f/unit-4/4a/"
     },
     "f-unit-4-4b": {
-      "version": "1.0.1",
+      "version": "1.0.2",
       "path": "/f/unit-4/4b/"
     },
     "f-unit-4-4c": {
